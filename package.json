@@ -1,0 +1,20 @@
+{
+  "name": "sam-private-ai",
+  "version": "4.10.46-release-prep",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "verify": "node scripts/verify.mjs",
+    "test:safety": "node scripts/safety-test.mjs",
+    "verify:deployment": "node scripts/deployment-check.mjs",
+    "verify:integrity": "node scripts/release-integrity.mjs"
+  },
+  "dependencies": {
+    "next": "16.3.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "type": "module"
+}
