@@ -2,21 +2,10 @@
 
 Dedicated repository for SAM.
 
-## Current baseline
-SAM v4.10.46 — assistant workspace + server-side AI route.
+- Current baseline: functional private chat workspace
+- Separate deployment, secrets, database and OAuth configuration
+- Local chat history works without Supabase
+- Server-side OpenAI integration is included; credentials are never committed
+- Scheduler, Supabase persistence, OAuth, Android packaging and other external integrations remain intentionally deferred
 
-## Included now
-- Responsive private assistant workspace
-- Bangla / English / Hindi response-language selection
-- Local chat history in the browser
-- Server-side OpenAI-compatible chat route
-- Fail-closed behavior when the owner API key is not configured
-- No credentials committed to the repository
-- External database, OAuth, commerce and automation connectors remain optional follow-up work
-
-## Run
-`npm install`
-`npm run build`
-`npm start`
-
-The production deployment target can remain the existing SAM app. A separate Vercel project can be created later if needed; SAM must remain separate from unrelated projects.
+SAM is kept completely separate from CreateSoul/CreatorFlow.
