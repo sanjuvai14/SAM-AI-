@@ -1,5 +1,6 @@
 import type { AutomationJob } from "./automation";
 import type { JobRepository } from "./job-repository";
+import { canTransition } from "./job-lifecycle";
 
 type SupabaseConfig = {
   url: string;
@@ -90,22 +91,21 @@ export class SupabaseJobRepository implements JobRepository {
     id: string,
     userId: string,
     status: AutomationJob["status"],
-    error?: string
+    error?: string,
+    expectedStatus?: AutomationJob["status"]
   ): Promise<AutomationJob> {
     const current = await this.get(id, userId);
     if (!current) {
       throw new Error("SAM job not found or not owned by authenticated user.");
     }
 
-    const allowed: Record<AutomationJob["status"], AutomationJob["status"][]> = {
-      queued: ["awaiting_approval", "failed"],
-      awaiting_approval: ["queued", "failed"],
-      running: ["succeeded", "failed"],
-      succeeded: [],
-      failed: [],
-    };
+    if (expectedStatus && current.status !== expectedStatus) {
+      throw new Error(
+        `SAM job transition conflict: expected ${expectedStatus}, found ${current.status}`
+      );
+    }
 
-    if (!allowed[current.status].includes(status)) {
+    if (!canTransition(current.status, status)) {
       throw new Error(
         `Invalid SAM job transition: ${current.status} -> ${status}`
       );
@@ -119,8 +119,9 @@ export class SupabaseJobRepository implements JobRepository {
     if (status === "queued") body.approved_at = new Date().toISOString();
     if (status === "succeeded") body.verified_at = new Date().toISOString();
 
+    const expectedFilter = expectedStatus ?? current.status;
     const rows = await request<Record<string, unknown>[]>(
-      `/rest/v1/sam_jobs?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(userId)}`,
+      `/rest/v1/sam_jobs?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(userId)}&status=eq.${encodeURIComponent(expectedFilter)}`,
       {
         method: "PATCH",
         body: JSON.stringify(body),
@@ -128,7 +129,9 @@ export class SupabaseJobRepository implements JobRepository {
     );
 
     if (!rows[0]) {
-      throw new Error("SAM job transition did not update an owned job.");
+      throw new Error(
+        "SAM job transition was not applied because the job state changed concurrently."
+      );
     }
 
     return rowToJob(rows[0]);
