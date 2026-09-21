@@ -92,6 +92,25 @@ export class SupabaseJobRepository implements JobRepository {
     status: AutomationJob["status"],
     error?: string
   ): Promise<AutomationJob> {
+    const current = await this.get(id, userId);
+    if (!current) {
+      throw new Error("SAM job not found or not owned by authenticated user.");
+    }
+
+    const allowed: Record<AutomationJob["status"], AutomationJob["status"][]> = {
+      queued: ["awaiting_approval", "failed"],
+      awaiting_approval: ["queued", "failed"],
+      running: ["succeeded", "failed"],
+      succeeded: [],
+      failed: [],
+    };
+
+    if (!allowed[current.status].includes(status)) {
+      throw new Error(
+        `Invalid SAM job transition: ${current.status} -> ${status}`
+      );
+    }
+
     const body: Record<string, unknown> = {
       status,
       error: error ?? null,
@@ -109,7 +128,7 @@ export class SupabaseJobRepository implements JobRepository {
     );
 
     if (!rows[0]) {
-      throw new Error("SAM job not found or not owned by authenticated user.");
+      throw new Error("SAM job transition did not update an owned job.");
     }
 
     return rowToJob(rows[0]);
