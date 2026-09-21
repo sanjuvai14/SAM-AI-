@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.17.0-durable-job-queue-foundation",
+  "version": "4.18.0-hardened-job-api",
   "private": true,
   "scripts": {
     "dev": "next dev",
