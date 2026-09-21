@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.10.48-release-prep",
+  "version": "4.10.49-release-prep",
   "private": true,
   "scripts": {
     "dev": "next dev",
