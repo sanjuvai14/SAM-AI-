@@ -8,12 +8,17 @@
 - SAM remains completely separate from unrelated products/resources.
 
 ## Current release checkpoint
-- Version: 4.18.0-hardened-job-api
+- Version: 4.19.0-job-transition-guard
 - v4.16.0 authenticated job + audit flow remains intact.
 - Added a fail-closed scheduler authentication gate using CRON_SECRET.
 - Scheduler does not claim queue execution, external publishing, or verification.
 - Persistent job execution remains blocked until a dedicated SAM-owned database/worker is provisioned.
 - No unrelated database or Vercel project was modified.
+
+## v4.19.0 changes
+- Added repository-side validation for the durable job state machine before persistence transitions.
+- Invalid terminal/reversed transitions are rejected instead of being written.
+- Queue execution and external publishing remain fail-closed and unexecuted.
 
 ## v4.18.0 changes
 - Hardened authenticated job routes to use NextRequest directly and distinguish authentication failures (401) from unavailable persistent storage (503).
