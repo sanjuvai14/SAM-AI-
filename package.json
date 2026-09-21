@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.13.0-persistent-db-contract",
+  "version": "4.13.1-auth-boundary",
   "private": true,
   "scripts": {
     "dev": "next dev",
