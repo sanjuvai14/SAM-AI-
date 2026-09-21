@@ -24,3 +24,9 @@ The next work should start by verifying the GitHub Actions production build. The
 
 ## Verification rule
 Do not mark build, deployment, AI live test, OAuth, or APK as PASS until a real verification succeeds.
+
+## Latest checkpoint — 2026-09-21
+- Main application files verified in repository.
+- Configuration contract documented.
+- Vercel connector currently exposes only the unrelated CreatorFlow project; no SAM deployment was touched.
+- Resume by obtaining/connecting the previously used SAM Vercel project, then run a real production deployment/build verification.
