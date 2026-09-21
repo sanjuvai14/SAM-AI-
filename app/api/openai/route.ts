@@ -67,6 +67,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       answer: data?.choices?.[0]?.message?.content || "No response returned.",
+      verification: {
+        status: "unverified",
+        note: "SAM did not perform an external action in this request. Any real-world action must be verified separately before being reported as completed.",
+      },
     });
   } catch {
     return NextResponse.json({ error: "Invalid request or server error." }, { status: 400 });
