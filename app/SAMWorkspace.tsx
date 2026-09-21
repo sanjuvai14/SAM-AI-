@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { classifyVoiceIntent, verifyVoiceTranscript } from "@/lib/voice";
 
 type Message = { role: "user" | "assistant"; content: string };
+type CommandProposal = { intent: string; risk: "safe" | "consequential"; transcript: string; action?: string; requiresApproval: boolean; reason: string };
 
 const starters = [
   "আজকের কাজগুলো priority অনুযায়ী সাজাও",
@@ -31,6 +32,7 @@ export default function SAMWorkspace() {
   const [speechSupported, setSpeechSupported] = useState(true);
   const [heard, setHeard] = useState("");
   const [voiceNotice, setVoiceNotice] = useState("");
+  const [proposal, setProposal] = useState<CommandProposal | null>(null);
   const recognitionRef = useRef<any>(null);
   const continuousRef = useRef(false);
   const end = useRef<HTMLDivElement>(null);
@@ -141,9 +143,25 @@ export default function SAMWorkspace() {
           return;
         }
         const intent = classifyVoiceIntent(transcript, typeof confidence === "number" ? confidence : null);
-        setVoiceNotice(intent.type === "automation_request"
-          ? "এটি একটি consequential action হতে পারে। আগে SAM কী করবে তা দেখাবে; প্রয়োজনীয় approval ছাড়া external action চালানো হবে না।"
-          : "Voice command গ্রহণ করা হয়েছে।");
+        if (intent.type === "automation_request") {
+          setVoiceNotice("এটি একটি consequential action। SAM আগে proposed action দেখাবে; approval ছাড়া external action চালানো হবে না।");
+          void (async () => {
+            try {
+              const response = await fetch("/api/command", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ transcript, confidence }),
+              });
+              const data = await response.json();
+              if (data.proposal) setProposal(data.proposal as CommandProposal);
+              else setVoiceNotice(data.error || "Command proposal তৈরি করা যায়নি।");
+            } catch {
+              setVoiceNotice("Command proposal service-এ সংযোগ করা যাচ্ছে না।");
+            }
+          })();
+          return;
+        }
+        setVoiceNotice("Voice command গ্রহণ করা হয়েছে।");
         setInput(transcript);
         void send(transcript, true);
       }
@@ -178,6 +196,7 @@ export default function SAMWorkspace() {
     setInput("");
     setHeard("");
     setVoiceNotice("");
+    setProposal(null);
     localStorage.removeItem("sam-chat");
   }
 
@@ -229,6 +248,22 @@ export default function SAMWorkspace() {
           {messages.length === 1 && <div className="sam-starters">{starters.map((s) => <button key={s} onClick={() => send(s)}>✦ {s}</button>)}</div>}
 
           {voiceNotice && <div className="sam-note" aria-live="polite">{voiceNotice}</div>}
+
+          {proposal && (
+            <div className="sam-note" role="status">
+              <b>Proposed action:</b> {proposal.action || proposal.intent}<br />
+              <span>{proposal.reason}</span><br />
+              <small>Approval required: {proposal.requiresApproval ? "Yes" : "No"} · Execution: not performed</small>
+              <div style={{ marginTop: 8 }}>
+                <button type="button" onClick={() => { setInput(proposal.transcript); setProposal(null); }}>
+                  Review in message box
+                </button>
+                <button type="button" onClick={() => setProposal(null)} style={{ marginLeft: 8 }}>
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          )}
 
           {heard && (
             <div className="sam-voice-preview" aria-live="polite">
