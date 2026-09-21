@@ -9,8 +9,8 @@ SAM is a separate private AI assistant project.
 - Server-side OpenAI chat route: **implemented**
 - Voice input via browser Web Speech API when supported: **implemented**
 - Production build workflow: **configured**
-- Supabase/database: **intentionally deferred**
-- OAuth/social/commercial integrations: **intentionally deferred**
+- Supabase/database: **pending SAM-owned backend resource**
+- OAuth/social/commercial integrations: **pending after secure backend foundation**
 - Android APK: **separate build step later**
 
 ### AI configuration
