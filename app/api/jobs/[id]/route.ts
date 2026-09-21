@@ -46,7 +46,13 @@ export async function POST(request: NextRequest, context: Context) {
       if (job.status !== "awaiting_approval") {
         return NextResponse.json({ error: "Only awaiting-approval jobs can be rejected." }, { status: 409 });
       }
-      const updated = await jobs.transition(id, userId, "failed", "Rejected by user.");
+      const updated = await jobs.transition(
+        id,
+        userId,
+        "failed",
+        "Rejected by user.",
+        "awaiting_approval"
+      );
       await audit.append({
         id: crypto.randomUUID(),
         userId,
@@ -67,7 +73,13 @@ export async function POST(request: NextRequest, context: Context) {
       return NextResponse.json({ error: "Only awaiting-approval jobs can be approved." }, { status: 409 });
     }
 
-    const updated = await jobs.transition(id, userId, "queued");
+    const updated = await jobs.transition(
+      id,
+      userId,
+      "queued",
+      undefined,
+      "awaiting_approval"
+    );
     await audit.append({
       id: crypto.randomUUID(),
       userId,
