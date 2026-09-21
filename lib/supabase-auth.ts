@@ -5,7 +5,8 @@ export async function requireSupabaseAuthContext(
   request: NextRequest
 ): Promise<AuthContext> {
   const url = process.env.SAM_SUPABASE_URL;
-  if (!url) {
+  const anonKey = process.env.SAM_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) {
     throw new Error(
       "SAM authentication provider is not configured. Protected operation denied."
     );
@@ -21,7 +22,7 @@ export async function requireSupabaseAuthContext(
     `${url.replace(/\\/$/, "")}/auth/v1/user`,
     {
       headers: {
-        apikey: match[1],
+        apikey: anonKey,
         Authorization: `Bearer ${match[1]}`,
       },
       cache: "no-store",
