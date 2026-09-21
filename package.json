@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.21.0-voice-command-review",
+  "version": "4.22.0-queue-worker-boundary",
   "private": true,
   "scripts": {
     "dev": "next dev",
