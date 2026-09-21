@@ -8,7 +8,7 @@
 - SAM must remain completely separate from CreateSoul/CreatorFlow.
 
 ## Current release checkpoint
-- Version: 4.12.0-command-engine-foundation
+- Version: 4.12.1-job-approval-foundation
 - Added voice-first control with Bengali/English/Hindi recognition, spoken responses, push-to-talk, continuous listening toggle, and visible transcript feedback.
 - Consequential external actions remain approval-gated; unclear voice input is not treated as a verified action.
 - Previous automation foundation remains intact.
@@ -64,3 +64,11 @@ For every meaningful SAM version update, create a complete project artifact pinn
 ## Current implementation boundary
 - The command engine is a safe proposal layer, not yet a durable execution worker.
 - Persistent jobs, authentication, OAuth, scheduler, external API execution, and post-action verification remain separate release gates.
+
+
+## v4.12.1 job/approval additions
+- Added a typed job-state store scaffold with explicit state transitions.
+- Added `/api/jobs` for job creation/listing and `/api/jobs/[id]` for inspection plus explicit approve/reject decisions.
+- Approval only moves a job to queued; it does not execute an external action.
+- Rejection records a failed/rejected state in the current process.
+- This is intentionally ephemeral until SAM has its own authenticated persistent database; no CreateSoul/CreatorFlow database is used.
