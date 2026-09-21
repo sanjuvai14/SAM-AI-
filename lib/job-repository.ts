@@ -8,7 +8,8 @@ export interface JobRepository {
     id: string,
     userId: string,
     status: AutomationJob["status"],
-    error?: string
+    error?: string,
+    expectedStatus?: AutomationJob["status"]
   ): Promise<AutomationJob>;
 }
 
