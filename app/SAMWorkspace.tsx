@@ -18,6 +18,7 @@ export default function SAMWorkspace() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [voice, setVoice] = useState(false);
+  const [voiceLang, setVoiceLang] = useState("bn-BD");
   const end = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,7 +63,7 @@ export default function SAMWorkspace() {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) return;
     const r = new SpeechRecognition();
-    r.lang = "bn-BD";
+    r.lang = voiceLang;
     r.interimResults = false;
     r.onstart = () => setVoice(true);
     r.onend = () => setVoice(false);
@@ -92,7 +93,7 @@ export default function SAMWorkspace() {
       </aside>
 
       <section className="sam-main">
-        <header className="sam-header"><div><b>SAM Workspace</b><small>Private · ready for setup</small></div><button onClick={clear}>Clear</button></header>
+        <header className="sam-header"><div><b>SAM Workspace</b><small>Private · ready for setup</small></div><div className="sam-header-actions"><select aria-label="Voice language" value={voiceLang} onChange={(e) => setVoiceLang(e.target.value)}><option value="bn-BD">বাংলা</option><option value="en-US">English</option><option value="hi-IN">हिन्दी</option></select><button onClick={clear}>Clear</button></div></header>
         <div className="sam-chat">
           <div className="sam-welcome">
             <div className="sam-orb">S</div>
