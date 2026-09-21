@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.12.1-job-approval-foundation",
+  "version": "4.13.0-persistent-db-contract",
   "private": true,
   "scripts": {
     "dev": "next dev",
