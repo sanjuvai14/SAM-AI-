@@ -8,12 +8,18 @@
 - SAM remains completely separate from unrelated products/resources.
 
 ## Current release checkpoint
-- Version: 4.17.0-durable-job-queue-foundation
+- Version: 4.18.0-hardened-job-api
 - v4.16.0 authenticated job + audit flow remains intact.
 - Added a fail-closed scheduler authentication gate using CRON_SECRET.
 - Scheduler does not claim queue execution, external publishing, or verification.
 - Persistent job execution remains blocked until a dedicated SAM-owned database/worker is provisioned.
 - No unrelated database or Vercel project was modified.
+
+## v4.18.0 changes
+- Hardened authenticated job routes to use NextRequest directly and distinguish authentication failures (401) from unavailable persistent storage (503).
+- Hardened job payload validation to reject arrays as payload objects.
+- Hardened Supabase job transitions so optional timestamp fields are omitted instead of serialized as undefined.
+- No external publishing/uploading was executed or claimed.
 
 ## v4.17.0 changes
 - /api/scheduler now requires CRON_SECRET and returns 401 when missing/invalid.
