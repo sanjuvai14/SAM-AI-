@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.16.0-authenticated-job-audit",
+  "version": "4.17.0-durable-job-queue-foundation",
   "private": true,
   "scripts": {
     "dev": "next dev",
