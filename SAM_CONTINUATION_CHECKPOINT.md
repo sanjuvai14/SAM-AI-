@@ -82,3 +82,10 @@ For every meaningful SAM version update, create a complete project artifact pinn
 - Migration has NOT been executed against any Supabase project.
 - CreateSoul/CreatorFlow Supabase remains untouched.
 - Dedicated SAM Supabase provisioning remains a separate approval/cost gate.
+
+
+## v4.13.1 auth-boundary
+- Added a fail-closed authentication context boundary in `lib/auth-context.ts`.
+- Added typed audit event/store contract in `lib/audit.ts`.
+- Protected operations must not trust client-supplied user IDs.
+- Real session verification remains gated on SAM-owned authentication being provisioned.
