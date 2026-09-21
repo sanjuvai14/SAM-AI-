@@ -1,37 +1,37 @@
-'use client';
+"use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
-type Message = { role: "user" | "assistant"; content: string };
+type ChatMessage = { role: "user" | "assistant"; content: string };
 
-const starter: Message[] = [
+const starter: ChatMessage[] = [
   {
     role: "assistant",
-    content:
-      "আমি SAM। তোমার private AI workspace প্রস্তুত। Supabase/database ও অতিরিক্ত integrations পরে যুক্ত করা যাবে—এখন এই workspace থেকেই AI chat ব্যবহার করতে পারবে।",
-  },
+    content: "আমি SAM। কী করতে চান বলুন—আমি আপনার কথার ভাষাতেই উত্তর দেব।"
+  }
 ];
 
 export default function Home() {
-  const [messages, setMessages] = useState<Message[]>(starter);
+  const [messages, setMessages] = useState<ChatMessage[]>(starter);
   const [input, setInput] = useState("");
+  const [language, setLanguage] = useState("auto");
   const [busy, setBusy] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("sam-chat");
-      if (saved) setMessages(JSON.parse(saved));
-    } catch {}
+    const saved = window.localStorage.getItem("sam-chat");
+    if (saved) {
+      try { setMessages(JSON.parse(saved)); } catch {}
+    }
   }, []);
 
   useEffect(() => {
-    try {
-      localStorage.setItem("sam-chat", JSON.stringify(messages));
-    } catch {}
+    window.localStorage.setItem("sam-chat", JSON.stringify(messages));
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  async function send(e: FormEvent) {
-    e.preventDefault();
+  async function sendMessage(event: FormEvent) {
+    event.preventDefault();
     const text = input.trim();
     if (!text || busy) return;
 
@@ -41,26 +41,21 @@ export default function Home() {
     setBusy(true);
 
     try {
-      const res = await fetch("/api/openai", {
+      const response = await fetch("/api/openai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next.slice(-20) }),
+        body: JSON.stringify({ messages: next, language })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "AI request failed");
-      setMessages((current) => [
-        ...current,
-        { role: "assistant", content: data.content || "কোনো উত্তর পাওয়া যায়নি।" },
-      ]);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "AI connection failed";
-      setMessages((current) => [
-        ...current,
-        {
-          role: "assistant",
-          content: `AI এখনো সম্পূর্ণভাবে সংযুক্ত হয়নি। কারণ: ${message}`,
-        },
-      ]);
+      const data = await response.json();
+      const reply = typeof data.message === "string"
+        ? data.message
+        : "এই মুহূর্তে উত্তর দিতে পারছি না। API configuration যাচাই করুন।";
+      setMessages([...next, { role: "assistant", content: reply }]);
+    } catch {
+      setMessages([...next, {
+        role: "assistant",
+        content: "সংযোগে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।"
+      }]);
     } finally {
       setBusy(false);
     }
@@ -68,65 +63,41 @@ export default function Home() {
 
   function clearChat() {
     setMessages(starter);
-    localStorage.removeItem("sam-chat");
+    window.localStorage.removeItem("sam-chat");
   }
 
   return (
-    <main className="sam-shell">
-      <aside className="sam-sidebar">
-        <div className="brand">
-          <div className="brand-mark">S</div>
-          <div><strong>SAM</strong><span>PRIVATE AI</span></div>
-        </div>
+    <main className="app-shell">
+      <aside className="sidebar">
+        <div className="brand"><span className="brand-mark">S</span><div><strong>SAM</strong><small>PRIVATE AI</small></div></div>
         <button className="new-chat" onClick={clearChat}>＋ New chat</button>
-        <div className="side-note">
-          <strong>Workspace</strong>
-          <p>Local chat history is saved on this device. Cloud database can be added later.</p>
-        </div>
-        <div className="side-footer">SAM • Private workspace</div>
+        <div className="side-section"><span>Workspace</span><button>▣ Assistant</button><button>◷ Tasks</button><button>◇ Automations</button><button>⚙ Settings</button></div>
+        <div className="side-bottom"><span className="secure-dot"/> Owner workspace<br/><small>External services can be connected later.</small></div>
       </aside>
 
-      <section className="sam-main">
+      <section className="chat">
         <header className="topbar">
-          <div>
-            <h1>SAM</h1>
-            <p>Your private AI assistant</p>
-          </div>
-          <div className="ready"><i /> Ready</div>
+          <div><div className="eyebrow">PRIVATE ASSISTANT</div><h1>SAM</h1></div>
+          <div className="top-actions"><select value={language} onChange={e => setLanguage(e.target.value)} aria-label="Response language"><option value="auto">Auto language</option><option value="বাংলা">বাংলা</option><option value="English">English</option><option value="हिन्दी">हिन्दी</option></select><button onClick={clearChat}>Clear</button></div>
         </header>
 
-        <div className="chat">
-          {messages.map((m, i) => (
-            <div className={`message-row ${m.role}`} key={i}>
-              <div className="avatar">{m.role === "assistant" ? "S" : "You"}</div>
-              <div className="bubble">{m.content}</div>
+        <div className="messages">
+          <div className="welcome"><div className="orb">S</div><h2>How can SAM help?</h2><p>Ask questions, plan work, write content, analyze ideas, or organize tasks.</p></div>
+          {messages.map((message, index) => (
+            <div className={`message-row ${message.role}`} key={index}>
+              <div className="avatar">{message.role === "assistant" ? "S" : "You"}</div>
+              <div className="bubble">{message.content}</div>
             </div>
           ))}
-          {busy && (
-            <div className="message-row assistant">
-              <div className="avatar">S</div>
-              <div className="bubble typing">SAM is thinking…</div>
-            </div>
-          )}
+          {busy && <div className="message-row assistant"><div className="avatar">S</div><div className="bubble typing">SAM is thinking…</div></div>}
+          <div ref={endRef}/>
         </div>
 
-        <form className="composer" onSubmit={send}>
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="SAM-কে কিছু জিজ্ঞেস করো…"
-            rows={1}
-            disabled={busy}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                e.currentTarget.form?.requestSubmit();
-              }
-            }}
-          />
-          <button type="submit" disabled={busy || !input.trim()} aria-label="Send">➤</button>
+        <form className="composer" onSubmit={sendMessage}>
+          <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(e); } }} placeholder="Message SAM…" rows={1} disabled={busy}/>
+          <button className="send" type="submit" disabled={busy || !input.trim()}>↑</button>
         </form>
-        <div className="privacy">Private workspace • API keys stay server-side • Cloud integrations can be connected later</div>
+        <p className="disclaimer">SAM can make mistakes. Verify important information and actions.</p>
       </section>
     </main>
   );
