@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.14.0-auth-session-foundation",
+  "version": "4.15.0-persistent-job-auth-adapter",
   "private": true,
   "scripts": {
     "dev": "next dev",
