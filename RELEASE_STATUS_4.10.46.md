@@ -1,23 +1,20 @@
-# SAM — Current Release Status
+# SAM — Current Release Readiness
 
-## Completed in this pass
+Core application source has been completed for the current dependency-free preparation stage.
 
-| Area | Status |
-|---|---|
-| Private SAM chat workspace UI | READY |
-| Responsive mobile/web layout | READY |
-| Local chat history | READY |
-| Server-side OpenAI route | READY |
-| AI key stays server-side | READY |
-| Demo fallback when no AI key is configured | READY |
-| Scheduler | DEFERRED |
-| Supabase / cloud persistence | DEFERRED |
-| OAuth integrations | DEFERRED |
-| Native Android APK | DEFERRED |
+| Area | Status | Notes |
+|---|---|---|
+| SAM workspace UI | READY | Responsive desktop/mobile chat workspace |
+| Local chat history | READY | Browser local storage; no database required |
+| Quick tools | READY | Writing, planning, analysis and translation prompts |
+| Voice input | READY | Uses browser speech recognition when supported |
+| Server-side AI route | READY | `/api/chat`; keeps provider key server-side |
+| Scheduler health route | READY | `/api/scheduler`; optional CRON_SECRET protection |
+| Supabase/database | DEFERRED | Can be connected later |
+| OAuth/social integrations | DEFERRED | Requires official credentials and owner authorization |
+| Android APK | DEFERRED | Requires Android SDK/Gradle verification |
+| Production Vercel deployment | PENDING VERIFICATION | Correct SAM Vercel project is not currently visible to the connected Vercel account |
 
-## Important
-This repository is kept separate from CreateSoul/CreatorFlow.
+## Verification rule
 
-No Supabase, OAuth, scheduler, or Android prerequisite is being treated as complete until it is actually configured and verified.
-
-The current app can be used as the SAM workspace; live AI responses require an owner-controlled AI provider key in the deployment environment.
+The source is not marked as production-deployed until a real build and the correct SAM deployment are successfully verified. No CreateSoul/CreatorFlow Vercel project is used for SAM.
