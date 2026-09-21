@@ -28,14 +28,23 @@ export async function POST(request: Request) {
     const clean = messages
       .filter((m) => (m?.role === "user" || m?.role === "assistant") && typeof m?.content === "string")
       .slice(-20)
-      .map((m) => ({ role: m.role, content: m.content.slice(0, 12000) }));
+      .map((m) => ({ role: m.role, content: m.content.slice(0, 12000) }))
+      .filter((m) => m.content.trim().length > 0);
+
+    // Keep the request bounded even when a client sends many long messages.
+    const bounded = clean.reduce<typeof clean>((acc, item) => {
+      const used = acc.reduce((sum, m) => sum + m.content.length, 0);
+      if (used >= 60000) return acc;
+      acc.push({ ...item, content: item.content.slice(0, Math.max(0, 60000 - used)) });
+      return acc;
+    }, []);
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-        messages: [{ role: "system", content: SYSTEM }, ...clean],
+        messages: [{ role: "system", content: SYSTEM }, ...bounded],
         temperature: 0.5,
       }),
     });
