@@ -16,6 +16,10 @@
 - Android SDK/APK packaging
 - Production deployment target selection
 
+## Latest technical cleanup
+- Removed the stale `/api/scheduler` cron declaration because the scheduler route is not present in the current repository. This prevents a false production configuration.
+- The build workflow remains the source of truth for production-build verification.
+
 ## Resume point
 Repository: sanjuvai14/SAM-AI-
 Branch: main
