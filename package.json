@@ -5,11 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "verify": "node scripts/verify.mjs",
-    "test:safety": "node scripts/safety-test.mjs",
-    "verify:deployment": "node scripts/deployment-check.mjs",
-    "verify:integrity": "node scripts/release-integrity.mjs"
+    "start": "next start"
   },
   "engines": {
     "node": "24.x"
