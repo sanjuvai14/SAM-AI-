@@ -15,6 +15,12 @@
 - Added automation API that prepares jobs but does not falsely claim external execution.
 - Added automation architecture and Android implementation plan.
 
+## v4.11.1 voice-control additions
+- Voice intent/verification contracts in `lib/voice.ts`.
+- Low-confidence voice transcripts are rejected instead of guessed.
+- Automation-like voice requests are explicitly identified as consequential and remain approval-gated.
+- Voice UI now provides transcript and safety status feedback.
+
 ## Verified baseline
 - Responsive private AI workspace
 - Browser-local conversation persistence
