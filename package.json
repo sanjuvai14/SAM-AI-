@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.11.0-automation-foundation",
+  "version": "4.11.1-voice-control-foundation",
   "private": true,
   "scripts": {
     "dev": "next dev",
