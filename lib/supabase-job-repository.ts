@@ -16,13 +16,10 @@ function config(): SupabaseConfig {
     );
   }
 
-  return { url: url.replace(/\\/$/, ""), accessToken };
+  return { url: url.replace(/\/$/, ""), accessToken };
 }
 
-async function request<T>(
-  path: string,
-  init: RequestInit = {}
-): Promise<T> {
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const { url, accessToken } = config();
   const response = await fetch(url + path, {
     ...init,
@@ -95,17 +92,19 @@ export class SupabaseJobRepository implements JobRepository {
     status: AutomationJob["status"],
     error?: string
   ): Promise<AutomationJob> {
+    const body: Record<string, unknown> = {
+      status,
+      error: error ?? null,
+    };
+
+    if (status === "queued") body.approved_at = new Date().toISOString();
+    if (status === "succeeded") body.verified_at = new Date().toISOString();
+
     const rows = await request<Record<string, unknown>[]>(
       `/rest/v1/sam_jobs?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(userId)}`,
       {
         method: "PATCH",
-        body: JSON.stringify({
-          status,
-          error: error ?? null,
-          approved_at: status === "queued" ? new Date().toISOString() : undefined,
-          verified_at:
-            status === "succeeded" ? new Date().toISOString() : undefined,
-        }),
+        body: JSON.stringify(body),
       }
     );
 
