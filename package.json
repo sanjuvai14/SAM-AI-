@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.13.1-auth-boundary",
+  "version": "4.14.0-auth-session-foundation",
   "private": true,
   "scripts": {
     "dev": "next dev",
