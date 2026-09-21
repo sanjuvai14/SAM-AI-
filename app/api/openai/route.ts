@@ -25,11 +25,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "SAM is ready, but the server-side AI API key is not configured yet." }, { status: 503 });
     }
 
+    if (!messages.length) {
+      return NextResponse.json({ error: "At least one message is required." }, { status: 400 });
+    }
+
     const clean = messages
       .filter((m) => (m?.role === "user" || m?.role === "assistant") && typeof m?.content === "string")
       .slice(-20)
       .map((m) => ({ role: m.role, content: m.content.slice(0, 12000) }))
       .filter((m) => m.content.trim().length > 0);
+
+    if (!clean.length) {
+      return NextResponse.json({ error: "No valid non-empty messages were provided." }, { status: 400 });
+    }
 
     // Keep the request bounded even when a client sends many long messages.
     const bounded = clean.reduce<typeof clean>((acc, item) => {
