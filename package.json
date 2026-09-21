@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.18.0-hardened-job-api",
+  "version": "4.19.0-job-transition-guard",
   "private": true,
   "scripts": {
     "dev": "next dev",
