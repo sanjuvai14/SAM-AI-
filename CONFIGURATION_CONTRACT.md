@@ -12,3 +12,10 @@ Deferred:
 - Android signing/build credentials
 
 Never commit secret values to GitHub.
+
+
+## v4.13.1+ production gates
+- `SAM_SUPABASE_URL` and `SAM_SUPABASE_ANON_KEY` are required before production persistence is enabled.
+- `SAM_AUTH_PROVIDER` is required before protected authentication operations are enabled.
+- Missing production configuration fails closed; there is no anonymous or fake-user fallback.
+- These variables are placeholders for the dedicated SAM backend and must not point at another product's database.
