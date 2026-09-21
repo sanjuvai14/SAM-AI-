@@ -8,7 +8,7 @@
 - SAM must remain completely separate from CreateSoul/CreatorFlow.
 
 ## Current release checkpoint
-- Version: 4.11.1-voice-control-foundation
+- Version: 4.12.0-command-engine-foundation
 - Added voice-first control with Bengali/English/Hindi recognition, spoken responses, push-to-talk, continuous listening toggle, and visible transcript feedback.
 - Consequential external actions remain approval-gated; unclear voice input is not treated as a verified action.
 - Previous automation foundation remains intact.
@@ -51,3 +51,16 @@ Do not deploy, edit, configure, or merge SAM into CreateSoul/CreatorFlow resourc
 
 ## Recovery rule
 For every meaningful SAM version update, create a complete project artifact pinned to the exact release commit and record its SHA-256. Future work may use that artifact as the recovery baseline.
+
+
+## v4.12.0 command-engine additions
+- Added lib/command-engine.ts to convert accepted text/voice requests into typed command proposals.
+- Supported proposals: YouTube upload, YouTube SEO, Facebook video, Instagram video, and TikTok video.
+- Consequential actions are always marked approval-required.
+- Ambiguous consequential requests are blocked rather than guessed.
+- Added /api/command as a proposal-only API; it never executes an external action.
+- No OAuth token, platform post/upload, or real-world action is claimed as completed.
+
+## Current implementation boundary
+- The command engine is a safe proposal layer, not yet a durable execution worker.
+- Persistent jobs, authentication, OAuth, scheduler, external API execution, and post-action verification remain separate release gates.
