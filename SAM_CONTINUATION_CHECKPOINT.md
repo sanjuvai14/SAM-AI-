@@ -103,3 +103,11 @@ For every meaningful SAM version update, create a complete project artifact pinn
 - Added authenticated Supabase session verification using the request Bearer token.
 - Protected persistence requires dedicated SAM database configuration and fails closed when missing.
 - No database project was provisioned or migrated in this step.
+
+
+## v4.16.0 authenticated job + audit flow
+- Jobs GET/POST now require a verified SAM Supabase session.
+- Job creation persists to `sam_jobs` and writes a `job.created` audit event.
+- Job lookup is scoped to the authenticated user.
+- Approval/rejection is persisted and audited; neither path executes an external platform action.
+- Protected operations fail closed when authentication or persistence configuration is unavailable.
