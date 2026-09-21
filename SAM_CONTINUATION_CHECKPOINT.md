@@ -89,3 +89,10 @@ For every meaningful SAM version update, create a complete project artifact pinn
 - Added typed audit event/store contract in `lib/audit.ts`.
 - Protected operations must not trust client-supplied user IDs.
 - Real session verification remains gated on SAM-owned authentication being provisioned.
+
+
+## v4.14.0 auth-session foundation
+- Added fail-closed persistent `JobRepository` boundary.
+- Added production gates for SAM-owned database and authentication configuration.
+- Missing production configuration refuses protected persistence/auth operations.
+- No external database was provisioned or modified in this step.
