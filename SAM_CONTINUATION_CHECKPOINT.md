@@ -8,8 +8,10 @@
 - SAM must remain completely separate from CreateSoul/CreatorFlow.
 
 ## Current release checkpoint
-- Version: 4.11.0-automation-foundation
-- Added approval-gated automation contracts for YouTube, Facebook, Instagram and TikTok publishing/SEO workflows.
+- Version: 4.11.1-voice-control-foundation
+- Added voice-first control with Bengali/English/Hindi recognition, spoken responses, push-to-talk, continuous listening toggle, and visible transcript feedback.
+- Consequential external actions remain approval-gated; unclear voice input is not treated as a verified action.
+- Previous automation foundation remains intact.
 - Added automation API that prepares jobs but does not falsely claim external execution.
 - Added automation architecture and Android implementation plan.
 
