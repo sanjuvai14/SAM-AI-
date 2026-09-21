@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { classifyVoiceIntent, verifyVoiceTranscript } from "@/lib/voice";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -29,6 +30,7 @@ export default function SAMWorkspace() {
   const [voiceSupported, setVoiceSupported] = useState(true);
   const [speechSupported, setSpeechSupported] = useState(true);
   const [heard, setHeard] = useState("");
+  const [voiceNotice, setVoiceNotice] = useState("");
   const recognitionRef = useRef<any>(null);
   const continuousRef = useRef(false);
   const end = useRef<HTMLDivElement>(null);
@@ -129,10 +131,21 @@ export default function SAMWorkspace() {
         if (e.results[i].isFinal) finalText += transcript;
         else interimText += transcript;
       }
-      setHeard((finalText || interimText).trim());
+      const transcript = (finalText || interimText).trim();
+      setHeard(transcript);
       if (finalText.trim()) {
-        setInput(finalText.trim());
-        void send(finalText.trim(), true);
+        const confidence = e.results[e.resultIndex]?.[0]?.confidence;
+        const verification = verifyVoiceTranscript(transcript, typeof confidence === "number" ? confidence : null);
+        if (!verification.accepted) {
+          setVoiceNotice("কথাটি পরিষ্কারভাবে বোঝা যায়নি—আবার বলো। SAM অনুমান করে কাজ করবে না।");
+          return;
+        }
+        const intent = classifyVoiceIntent(transcript, typeof confidence === "number" ? confidence : null);
+        setVoiceNotice(intent.type === "automation_request"
+          ? "এটি একটি consequential action হতে পারে। আগে SAM কী করবে তা দেখাবে; প্রয়োজনীয় approval ছাড়া external action চালানো হবে না।"
+          : "Voice command গ্রহণ করা হয়েছে।");
+        setInput(transcript);
+        void send(transcript, true);
       }
     };
 
@@ -164,6 +177,7 @@ export default function SAMWorkspace() {
     setMessages(first);
     setInput("");
     setHeard("");
+    setVoiceNotice("");
     localStorage.removeItem("sam-chat");
   }
 
@@ -213,6 +227,8 @@ export default function SAMWorkspace() {
           </div>
 
           {messages.length === 1 && <div className="sam-starters">{starters.map((s) => <button key={s} onClick={() => send(s)}>✦ {s}</button>)}</div>}
+
+          {voiceNotice && <div className="sam-note" aria-live="polite">{voiceNotice}</div>}
 
           {heard && (
             <div className="sam-voice-preview" aria-live="polite">
