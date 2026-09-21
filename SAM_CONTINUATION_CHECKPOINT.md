@@ -11,14 +11,16 @@ Durable handoff file for continuing SAM after a chat ends or when a later sessio
 - SAM must remain completely separate from CreateSoul/CreatorFlow.
 
 ## Current release checkpoint
-- Version: 4.10.49-release-prep
+- Version: 4.10.50-release-prep
 - Latest changes:
+  - explicit verification metadata is returned with AI responses
   - reject empty chat requests with a clear 400 response
   - reject requests that contain no valid non-empty messages
   - bounded cleaned AI request payload to 60,000 characters
   - ignored empty message content
   - selectable browser voice language: বাংলা (bn-BD), English (en-US), हिन्दी (hi-IN)
 - Recent commits:
+  - 5d63789dc9cc5dce642a688a400a20fe5d8ddb2c — add explicit action verification metadata
   - 821855ae74e470abe3c82beb571a04d79a3bb7f3 — chat request validation hardening
   - bc19ee937ecc1210bc81c0f1fc7abb84cb7f7de4 — version bump to 4.10.49
   - a9fbc35d24803b97ab9298ae01dc94b36c654f30 — AI request bounds
