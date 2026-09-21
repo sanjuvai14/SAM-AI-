@@ -4,7 +4,7 @@ export const JOB_TRANSITIONS: Record<
   AutomationJob["status"],
   readonly AutomationJob["status"][]
 > = {
-  queued: ["awaiting_approval", "failed"],
+  queued: ["awaiting_approval", "running", "failed"],
   awaiting_approval: ["queued", "failed"],
   running: ["succeeded", "failed"],
   succeeded: [],
