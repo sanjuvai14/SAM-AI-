@@ -1,8 +1,5 @@
 # SAM — Continuation Checkpoint
 
-## Purpose
-Durable handoff file for continuing SAM after a chat ends or when a later session needs to recover the exact working state.
-
 ## Project identity
 - Product: SAM — private personal AI assistant
 - Repository: sanjuvai14/SAM-AI-
@@ -11,55 +8,38 @@ Durable handoff file for continuing SAM after a chat ends or when a later sessio
 - SAM must remain completely separate from CreateSoul/CreatorFlow.
 
 ## Current release checkpoint
-- Version: 4.10.50-release-prep
-- Latest changes:
-  - explicit verification metadata is returned with AI responses
-  - reject empty chat requests with a clear 400 response
-  - reject requests that contain no valid non-empty messages
-  - bounded cleaned AI request payload to 60,000 characters
-  - ignored empty message content
-  - selectable browser voice language: বাংলা (bn-BD), English (en-US), हिन्दी (hi-IN)
-- Recent commits:
-  - 5d63789dc9cc5dce642a688a400a20fe5d8ddb2c — add explicit action verification metadata
-  - 821855ae74e470abe3c82beb571a04d79a3bb7f3 — chat request validation hardening
-  - bc19ee937ecc1210bc81c0f1fc7abb84cb7f7de4 — version bump to 4.10.49
-  - a9fbc35d24803b97ab9298ae01dc94b36c654f30 — AI request bounds
-  - 2dd7d62e829195bb455e1849ab489a24fe36e49b — selectable voice languages
-  - 144171b67266009c6e8e4437ba7b539b41035e28 — version bump
+- Version: 4.11.0-automation-foundation
+- Added approval-gated automation contracts for YouTube, Facebook, Instagram and TikTok publishing/SEO workflows.
+- Added automation API that prepares jobs but does not falsely claim external execution.
+- Added automation architecture and Android implementation plan.
 
 ## Verified baseline
-- Responsive private workspace
+- Responsive private AI workspace
 - Browser-local conversation persistence
 - Server-side OpenAI chat endpoint
 - Browser voice input when supported
 - Bengali/English/Hindi voice-language selection
-- GitHub production-build workflow
+- Production build workflow
 - Configuration/release documentation
-
-## Required live AI configuration
-- AI_PROVIDER=openai
-- OPENAI_API_KEY=<owner-managed secret>
-- OPENAI_MODEL=<optional>
-- Never commit secrets.
+- Automation preparation API with verification-first status
 
 ## Remaining work
-1. Verify the v4.10.49 production build.
-2. Continue internal AI/chat hardening and action-verification scaffolding.
-3. Supabase/database persistence with secure RLS.
-4. Authentication and secure sessions.
-5. Scheduler/job system with audit trail.
-6. Official social OAuth + posting verification.
-7. Business/commerce modules.
-8. Real-device voice verification.
-9. Android SDK/APK packaging.
-10. SAM AI 2026 production deployment.
-11. Full E2E verification and security/release audit.
+1. Verify the latest production build.
+2. Add SAM-owned persistent database with secure RLS.
+3. Authentication and secure sessions.
+4. Durable scheduler/job queue and audit trail.
+5. Official YouTube OAuth/API and upload/metadata verification.
+6. Official Meta OAuth/API for Facebook/Instagram publishing and verification.
+7. Official TikTok OAuth/API and publishing verification.
+8. Android app implementation and real-device testing.
+9. SAM AI 2026 production deployment.
+10. Full E2E security/release audit.
 
 ## Verification rule
-Never mark build, deployment, live AI, OAuth, or APK PASS unless actually verified.
-
-## Resume rule
-Read this file first, then inspect current repository files and latest commits. Continue from the newest verified checkpoint; do not recreate older work. If deployment/integration is blocked, continue safe internal SAM work and record the blocker here.
+Never mark build, deployment, live AI, OAuth, publishing, or APK PASS unless actually verified.
 
 ## Separation rule
-Do not deploy, edit, configure, or merge SAM into CreateSoul/CreatorFlow resources. Production deployment must target SAM's own Vercel project.
+Do not deploy, edit, configure, or merge SAM into CreateSoul/CreatorFlow resources. The only exposed Supabase project is currently creatorflow-ai and must not be used for SAM.
+
+## Recovery rule
+For every meaningful SAM version update, create a complete project artifact pinned to the exact release commit and record its SHA-256. Future work may use that artifact as the recovery baseline.
