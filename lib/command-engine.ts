@@ -17,9 +17,9 @@ export type CommandProposal = {
   reason: string;
 };
 
-const patterns: Array<{ intent: Exclude<CommandIntent, "chat" | "unknown">; hints: string[] }> = [
-  { intent: "youtube.upload", hints: ["youtube", "ইউটিউব", "यूट्यूब", "upload", "আপলোড", "अपलोड"] },
-  { intent: "youtube.seo", hints: ["youtube seo", "ইউটিউব seo", "title tags", "টাইটেল ট্যাগ"] },
+const specificPatterns: Array<{ intent: Exclude<CommandIntent, "chat" | "unknown">; hints: string[] }> = [
+  { intent: "youtube.seo", hints: ["youtube seo", "ইউটিউব seo", "youtube title tags", "ইউটিউব টাইটেল ট্যাগ"] },
+  { intent: "youtube.upload", hints: ["youtube upload", "youtube আপলোড", "ইউটিউব upload", "ইউটিউব আপলোড", "youtube", "ইউটিউব", "यूट्यूब", "upload", "আপলোড", "अपलोड"] },
   { intent: "facebook.video", hints: ["facebook", "ফেসবুক", "फेसबुक"] },
   { intent: "instagram.video", hints: ["instagram", "ইনস্টাগ্রাম", "इंस्टाग्राम"] },
   { intent: "tiktok.video", hints: ["tiktok", "টিকটক", "टिकटॉक"] },
@@ -35,9 +35,7 @@ export function buildCommandProposal(transcript: string, confidence: number | nu
   }
 
   const lower = value.toLocaleLowerCase();
-  const match = patterns
-    .filter((p) => p.hints.some((h) => lower.includes(h.toLocaleLowerCase())))
-    .sort((a, b) => b.hints.length - a.hints.length)[0];
+  const match = specificPatterns.find((p) => p.hints.some((h) => lower.includes(h.toLocaleLowerCase())));
 
   if (!match) {
     const risky = consequential.some((h) => lower.includes(h));
