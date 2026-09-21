@@ -11,10 +11,19 @@
     "verify:deployment": "node scripts/deployment-check.mjs",
     "verify:integrity": "node scripts/release-integrity.mjs"
   },
+  "engines": {
+    "node": "24.x"
+  },
   "dependencies": {
     "next": "16.3.0",
     "react": "19.2.0",
     "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.8.0"
   },
   "type": "module"
 }
