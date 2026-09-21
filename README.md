@@ -1,9 +1,13 @@
 # SAM — Private AI Assistant
 
-Dedicated repository for SAM.
+SAM is a dedicated private AI assistant workspace.
 
-- Baseline: SAM v4.10.46 release-prep
-- Separate deployment, secrets, database and OAuth configuration.
+## Current baseline
+- Core chat workspace: implemented.
+- Server-side OpenAI route: implemented; credentials stay server-side.
+- Responsive mobile/web UI: implemented.
+- Scheduler, database persistence, OAuth integrations, native Android build and production deployment remain separate verification/integration steps.
 - Never commit credentials.
 
-Production build, native APK, live AI and live OAuth remain pending independent verification.
+## Deployment rule
+SAM must use a SAM-specific Vercel project. Do not deploy SAM to unrelated CreateSoul/CreatorFlow projects.
