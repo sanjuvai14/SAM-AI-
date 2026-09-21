@@ -1,60 +1,80 @@
 import { NextResponse } from "next/server";
 
-type Message = { role: "user" | "assistant" | "system"; content: string };
+type Msg = { role: "user" | "assistant"; content: string };
+
+function cleanMessages(input: unknown): Msg[] {
+  if (!Array.isArray(input)) return [];
+  return input
+    .filter((m): m is Msg =>
+      !!m &&
+      typeof m === "object" &&
+      (((m as Msg).role === "user") || ((m as Msg).role === "assistant")) &&
+      typeof (m as Msg).content === "string"
+    )
+    .slice(-20)
+    .map((m) => ({ role: m.role, content: m.content.slice(0, 12000) }));
+}
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { messages?: Message[]; language?: string };
-    const messages = Array.isArray(body.messages) ? body.messages.slice(-30) : [];
-    if (!messages.length) {
-      return NextResponse.json({ error: "No messages supplied." }, { status: 400 });
+    const body = await request.json();
+    const provider = (process.env.AI_PROVIDER || "openai").toLowerCase();
+
+    if (provider !== "openai") {
+      return NextResponse.json(
+        { error: "SAM's configured AI provider is not supported by this endpoint yet." },
+        { status: 503 }
+      );
     }
 
-    const apiKey = process.env.OPENAI_API_KEY || process.env.AI_PROVIDER_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({
-        mode: "demo",
-        message: "SAM is ready. Connect the owner-controlled AI API key in Vercel to enable live AI replies."
-      });
+    const key = process.env.OPENAI_API_KEY || process.env.AI_PROVIDER_API_KEY;
+    if (!key) {
+      return NextResponse.json(
+        { error: "SAM is ready, but the server-side AI API key is not configured." },
+        { status: 503 }
+      );
     }
 
-    const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
-    const language = typeof body.language === "string" ? body.language : "auto";
-    const system = [
-      "You are SAM, a private personal AI assistant.",
-      "Be concise, practical, and honest about what you can actually do.",
-      "Reply in the user's language unless they explicitly request another language.",
-      "Do not claim an external action was completed unless the system actually performed it.",
-      language !== "auto" ? `Preferred response language: ${language}.` : ""
-    ].filter(Boolean).join(" ");
+    const messages = cleanMessages(body?.messages);
+    if (!messages.length || messages[messages.length - 1].role !== "user") {
+      return NextResponse.json({ error: "A user message is required." }, { status: 400 });
+    }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model,
-        messages: [{ role: "system", content: system }, ...messages],
-        temperature: 0.4
+        model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are SAM, a private personal AI assistant. Reply in the user's language. Be practical, concise, honest about limitations, and never claim an action was completed unless it actually was.",
+          },
+          ...messages,
+        ],
+        temperature: 0.5,
       }),
-      cache: "no-store"
     });
 
+    const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      const detail = await response.text();
-      return NextResponse.json({ error: "AI provider request failed.", detail }, { status: 502 });
+      return NextResponse.json(
+        { error: data?.error?.message || "The AI provider request failed." },
+        { status: response.status >= 500 ? 502 : response.status }
+      );
     }
 
-    const data = await response.json();
-    const message = data?.choices?.[0]?.message?.content;
-    if (typeof message !== "string" || !message.trim()) {
-      return NextResponse.json({ error: "AI provider returned no message." }, { status: 502 });
-    }
-
-    return NextResponse.json({ mode: "live", message });
+    return NextResponse.json({
+      answer: data?.choices?.[0]?.message?.content || "No response was returned.",
+    });
   } catch {
-    return NextResponse.json({ error: "Invalid request or temporary server error." }, { status: 400 });
+    return NextResponse.json(
+      { error: "SAM could not process the request." },
+      { status: 400 }
+    );
   }
 }
