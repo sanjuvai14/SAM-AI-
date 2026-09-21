@@ -72,3 +72,13 @@ For every meaningful SAM version update, create a complete project artifact pinn
 - Approval only moves a job to queued; it does not execute an external action.
 - Rejection records a failed/rejected state in the current process.
 - This is intentionally ephemeral until SAM has its own authenticated persistent database; no CreateSoul/CreatorFlow database is used.
+
+
+## v4.13.0 persistent-db-contract
+- Added `supabase/migrations/202609220001_sam_jobs_audit.sql` as the SAM-owned durable jobs/audit schema contract.
+- Added RLS policies scoped to authenticated `auth.uid()`.
+- Client-side audit writes and job state mutation are intentionally blocked.
+- Added `SAM_DATABASE_CONTRACT.md` documenting the deployment boundary.
+- Migration has NOT been executed against any Supabase project.
+- CreateSoul/CreatorFlow Supabase remains untouched.
+- Dedicated SAM Supabase provisioning remains a separate approval/cost gate.
