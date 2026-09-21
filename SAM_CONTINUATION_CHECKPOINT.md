@@ -8,29 +8,18 @@
 - SAM remains completely separate from unrelated products/resources.
 
 ## Current release checkpoint
-- Version: 4.19.0-job-transition-guard
-- v4.16.0 authenticated job + audit flow remains intact.
-- Added a fail-closed scheduler authentication gate using CRON_SECRET.
-- Scheduler does not claim queue execution, external publishing, or verification.
-- Persistent job execution remains blocked until a dedicated SAM-owned database/worker is provisioned.
+- Version: 4.20.0-concurrent-transition-guard
+- v4.19.0 durable job transition guard remains intact.
+- Added a shared job lifecycle transition contract.
+- Added optimistic concurrency protection to durable job transitions by requiring the expected current status in the persisted PATCH filter.
+- Approval/rejection routes now pass the expected awaiting_approval state, preventing stale approval decisions from overwriting a newer state.
+- Queue execution and external publishing remain fail-closed and unexecuted.
 - No unrelated database or Vercel project was modified.
 
-## v4.19.0 changes
-- Added repository-side validation for the durable job state machine before persistence transitions.
-- Invalid terminal/reversed transitions are rejected instead of being written.
-- Queue execution and external publishing remain fail-closed and unexecuted.
-
-## v4.18.0 changes
-- Hardened authenticated job routes to use NextRequest directly and distinguish authentication failures (401) from unavailable persistent storage (503).
-- Hardened job payload validation to reject arrays as payload objects.
-- Hardened Supabase job transitions so optional timestamp fields are omitted instead of serialized as undefined.
-- No external publishing/uploading was executed or claimed.
-
-## v4.17.0 changes
-- /api/scheduler now requires CRON_SECRET and returns 401 when missing/invalid.
-- Scheduler explicitly reports execution as not_executed.
-- Package version bumped to 4.17.0-durable-job-queue-foundation.
-- This release is a queue/execution safety gate, not a live external-action worker.
+## Verification status
+- GitHub Actions workflow runs for the previous checkpoint: none returned.
+- Previous GitHub commit statuses included Vercel failures pointing to a build-rate-limit page.
+- Production deployment is therefore not marked PASS.
 
 ## Remaining work
 1. Verify production build/deployment.
