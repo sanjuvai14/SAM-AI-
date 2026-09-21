@@ -6,7 +6,7 @@ Required for live AI:
 - OPENAI_MODEL=<optional; defaults in API route>
 
 Deferred:
-- Supabase
+- SAM-owned Supabase project/database
 - OAuth/social credentials
 - commerce credentials
 - Android signing/build credentials
