@@ -1,14 +1,17 @@
-# SAM v4.10.46 — Release Preparation Status
+# SAM v4.10.46 — Current Release Status
 
-This package contains concrete release-preparation work, but does not falsely mark external prerequisites as complete.
+This status reflects repository work only. External credentials/services are intentionally not marked complete until verified.
 
-| Gate | Status | Why |
+| Gate | Status | Notes |
 |---|---|---|
-| Production build | BLOCKED | Dependency installation has not completed in the current environment; therefore `next build` is not claimed as PASS. |
-| Live deployment | BLOCKED | A separate SAM deployment target must be created; unrelated projects are not modified. |
-| OpenAI API | READY TO VERIFY | Added `/api/openai` and `scripts/openai-live-check.mjs`. A real owner-controlled API key is required. |
-| Real authorization publishing | FAIL-CLOSED / PENDING | Real OAuth authorization requires official platform credentials and owner authorization. |
-| Native Android APK | SOURCE READY / BUILD BLOCKED | Android SDK/Gradle and real-device verification are still required. |
+| Assistant UI | READY IN REPOSITORY | Responsive SAM chat workspace is present. |
+| Server AI route | READY IN REPOSITORY | `/api/openai` added; uses owner-controlled environment variables. |
+| Chat persistence | READY IN REPOSITORY | Browser-local chat history is implemented. |
+| Production build | NOT VERIFIED HERE | Requires an actual dependency install/build in the target environment. |
+| Existing Vercel app | PENDING TARGET VERIFICATION | Can be reused if it is the correct SAM project. |
+| Supabase / persistent cloud DB | DEFERRED | Not required for the current UI/API preparation. |
+| OAuth/social/commerce | DEFERRED | Official credentials and owner authorization required later. |
+| Android APK | DEFERRED | Separate SDK/Gradle/device verification remains later work. |
 
 ## Verification rule
 Only a successful real build, deployment, API check, OAuth authorization, or APK build is labeled PASS.
