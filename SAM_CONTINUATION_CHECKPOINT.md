@@ -96,3 +96,10 @@ For every meaningful SAM version update, create a complete project artifact pinn
 - Added production gates for SAM-owned database and authentication configuration.
 - Missing production configuration refuses protected persistence/auth operations.
 - No external database was provisioned or modified in this step.
+
+
+## v4.15.0 persistent job/auth adapter
+- Added a Supabase-backed `JobRepository` adapter with ownership filtering and status transitions.
+- Added authenticated Supabase session verification using the request Bearer token.
+- Protected persistence requires dedicated SAM database configuration and fails closed when missing.
+- No database project was provisioned or migrated in this step.
