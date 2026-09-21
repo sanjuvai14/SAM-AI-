@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.15.0-persistent-job-auth-adapter",
+  "version": "4.16.0-authenticated-job-audit",
   "private": true,
   "scripts": {
     "dev": "next dev",
