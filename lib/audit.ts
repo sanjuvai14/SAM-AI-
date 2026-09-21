@@ -23,3 +23,14 @@ export type AuditEvent = {
 export interface AuditStore {
   append(event: AuditEvent): Promise<void>;
 }
+
+
+export const AUDIT_EVENT_TYPES = {
+  JOB_CREATED: "job.created",
+  JOB_QUEUED: "job.queued",
+  JOB_RUNNING: "job.running",
+  JOB_SUCCEEDED: "job.succeeded",
+  JOB_FAILED: "job.failed",
+  JOB_BLOCKED: "job.blocked",
+  JOB_REJECTED: "job.rejected",
+} as const;
