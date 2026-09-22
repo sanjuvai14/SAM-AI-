@@ -11,3 +11,6 @@
 
 ## Verification boundary
 Live Supabase provisioning, provider OAuth authorization, Vercel production deployment, and physical Android device testing still require the owner's external accounts/environment. This checkpoint does not claim those live checks as passed.
+
+## Deployment trigger
+- Trigger a fresh Vercel production build from this verified checkpoint commit.
