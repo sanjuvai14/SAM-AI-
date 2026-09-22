@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.22.0-queue-worker-boundary",
+  "version": "4.23.0-paper-trading-orchestration",
   "private": true,
   "scripts": {
     "dev": "next dev",
