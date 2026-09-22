@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.25.0-social-oauth-verification",
+  "version": "4.26.0-auth-session-hardening",
   "private": true,
   "scripts": {
     "dev": "next dev",
