@@ -9,5 +9,13 @@
   "background_color": "#05070b",
   "theme_color": "#05070b",
   "lang": "en",
-  "categories": ["productivity", "utilities"]
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/sam-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
