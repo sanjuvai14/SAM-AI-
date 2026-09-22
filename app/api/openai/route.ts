@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";\nimport { requireSupabaseAuthContext } from "@/lib/supabase-auth";
+import { NextRequest, NextResponse } from "next/server";
+import { requireSupabaseAuthContext } from "@/lib/supabase-auth";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
