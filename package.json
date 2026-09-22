@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.23.0-paper-trading-orchestration",
+  "version": "4.24.0-auth-android-foundation",
   "private": true,
   "scripts": {
     "dev": "next dev",
