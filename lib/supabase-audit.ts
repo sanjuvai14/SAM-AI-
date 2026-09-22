@@ -9,7 +9,7 @@ export class SupabaseAuditStore implements AuditStore {
     }
 
     const response = await fetch(
-      `${url.replace(/\\/$/, "")}/rest/v1/sam_audit_events`,
+      `${url.replace(/\/$/, "")}/rest/v1/sam_audit_events`,
       {
         method: "POST",
         headers: {
