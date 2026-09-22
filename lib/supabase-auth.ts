@@ -23,7 +23,7 @@ export async function requireSupabaseAuthContext(
     {
       headers: {
         apikey: anonKey,
-        Authorization: `Bearer ${match[1]}`,
+        Authorization: `Bearer ${token}`,
       },
       cache: "no-store",
     }
