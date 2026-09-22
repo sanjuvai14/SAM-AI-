@@ -1,0 +1,13 @@
+{
+  "name": "SAM — Private AI Assistant",
+  "short_name": "SAM",
+  "description": "Private, approval-gated personal AI assistant.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05070b",
+  "theme_color": "#05070b",
+  "lang": "en",
+  "categories": ["productivity", "utilities"]
+}
