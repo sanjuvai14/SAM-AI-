@@ -15,15 +15,9 @@ export type AuditEvent = {
   createdAt: string;
 };
 
-/**
- * Durable audit writes belong behind the SAM database adapter.
- * Keeping this boundary explicit prevents accidental in-memory-only
- * audit records from being presented as production persistence.
- */
 export interface AuditStore {
   append(event: AuditEvent): Promise<void>;
 }
-
 
 export const AUDIT_EVENT_TYPES = {
   JOB_CREATED: "job.created",
