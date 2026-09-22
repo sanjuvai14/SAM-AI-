@@ -1,5 +1,5 @@
-import SAMWorkspace from "./SAMWorkspace";
+import SAMAuthGate from "./SAMAuthGate";
 
 export default function Home() {
-  return <SAMWorkspace />;
+  return <SAMAuthGate />;
 }
