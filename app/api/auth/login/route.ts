@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const email = typeof body?.email === "string" ? body.email.trim() : "";
     const password = typeof body?.password === "string" ? body.password : "";
     if (!email || !password) return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
-    const response = await fetch(url.replace(/\\/$/, "") + "/auth/v1/token?grant_type=password", {
+    const response = await fetch(url.replace(/\/$/, "") + "/auth/v1/token?grant_type=password", {
       method: "POST", headers: { apikey: anonKey, "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }), cache: "no-store",
     });
