@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -13,13 +13,20 @@ export async function GET(request: Request) {
   const token = process.env.SAM_SUPABASE_ACCESS_TOKEN;
   if (!url || !token) return NextResponse.json({ error: "Worker storage is not configured" }, { status: 503 });
 
-  const db = createClient(url, token, { auth: { persistSession: false } });
-  const { data, error } = await db.from("sam_jobs").select("id,user_id,action,title,payload,status").eq("status","queued").order("created_at",{ascending:true}).limit(10);
-  if (error) return NextResponse.json({ error: "Queue read failed" }, { status: 503 });
-
+  async function query(path: string, init: RequestInit = {}) {
+    const response = await fetch(url.replace(/\/$/, "") + path, {
+      ...init,
+      headers: { apikey: token, Authorization: `Bearer ${token}`, "Content-Type": "application/json", Prefer: "return=representation", ...(init.headers ?? {}) },
+      cache: "no-store",
+    });
+    if (!response.ok) throw new Error("Queue operation failed");
+    const body = await response.text();
+    return body ? JSON.parse(body) : null;
+  }
+  const data = await query("/rest/v1/sam_jobs?status=eq.queued&order=created_at.asc&limit=10");
   const results = [];
   for (const job of data ?? []) {
-    const { data: claimed } = await db.from("sam_jobs").update({status:"running",started_at:new Date().toISOString(),error:null}).eq("id",job.id).eq("status","queued").select("id").maybeSingle();
+    const { data: claimed } = await query(`/rest/v1/sam_jobs?id=eq.${encodeURIComponent(job.id)}&status=eq.queued`, {method:"PATCH", body:JSON.stringify({status:"running",started_at:new Date().toISOString(),error:null})});
     if (!claimed) continue;
     // External providers are executed only by configured provider adapters.
     // Never report success until the provider returns a verifiable result.
