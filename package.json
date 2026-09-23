@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.26.0-auth-session-hardening",
+  "version": "4.26.2-production-baseline",
   "private": true,
   "scripts": {
     "dev": "next dev",
