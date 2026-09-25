@@ -28,8 +28,7 @@ function headers() {
 }
 
 export async function saveSocialConnection(input: Omit<Connection, "id" | "created_at" | "updated_at">) {
-  const access = encryptSecret(input.access_token);
-  const refresh = input.refresh_token ? encryptSecret(input.refresh_token) : null;
+  const credential = encryptSecret(JSON.stringify({ access_token: input.access_token, refresh_token: input.refresh_token }));
   const response = await fetch(endpoint("sam_social_connections?on_conflict=user_id,platform"), {
     method: "POST",
     headers: { ...headers(), Prefer: "resolution=merge-duplicates,return=representation" },
@@ -40,10 +39,10 @@ export async function saveSocialConnection(input: Omit<Connection, "id" | "creat
       account_name: input.account_name,
       access_token: null,
       refresh_token: null,
-      access_token_ciphertext: access.ciphertext,
-      refresh_token_ciphertext: refresh?.ciphertext || null,
-      token_iv: access.iv,
-      token_tag: access.tag,
+      access_token_ciphertext: credential.ciphertext,
+      refresh_token_ciphertext: null,
+      token_iv: credential.iv,
+      token_tag: credential.tag,
       credential_version: 1,
       expires_at: input.expires_at,
       scopes: input.scopes,
@@ -64,10 +63,13 @@ export async function getSocialConnection(userId: string, platform: Connection["
   if (!row) return null;
 
   if (row.access_token_ciphertext && row.token_iv && row.token_tag) {
-    row.access_token = decryptSecret(row.access_token_ciphertext, row.token_iv, row.token_tag);
-    row.refresh_token = row.refresh_token_ciphertext && row.token_iv && row.token_tag
-      ? decryptSecret(row.refresh_token_ciphertext, row.token_iv, row.token_tag)
-      : null;
+    const credentials = JSON.parse(decryptSecret(row.access_token_ciphertext, row.token_iv, row.token_tag)) as {
+      access_token?: string;
+      refresh_token?: string | null;
+    };
+    if (!credentials.access_token) throw new Error("Social credential is unavailable.");
+    row.access_token = credentials.access_token;
+    row.refresh_token = credentials.refresh_token || null;
   } else if (!row.access_token) {
     throw new Error("Social credential is unavailable.");
   }
