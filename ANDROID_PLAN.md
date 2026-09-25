@@ -1,17 +1,16 @@
-# SAM Android Plan — v4.11.0
+# SAM Android plan — v4.27.0
 
-Target: private Android app for SAM.
+## Architecture
+1. Android client: chat, voice, job status, approvals and audit display.
+2. SAM backend: AI, OAuth, job execution, verification and secure storage.
+3. Official platform APIs: YouTube/Meta/TikTok rather than UI automation.
 
-Architecture:
-1. Android client for chat, voice, job status, approvals, and audit.
-2. SAM backend for AI, OAuth, job execution, verification, and secure storage.
-3. Official YouTube/Meta/TikTok APIs for publishing instead of fragile UI automation.
+## Permissions
+Microphone is required for voice input. Camera/screen capture remain permission-gated and must be tested on a real device. SAM does not request broad device-control permissions as a substitute for explicit user consent.
 
-Initial Android permissions should be minimal. Microphone is needed for voice input; notifications may be added for job completion. Broad device-control permissions are not part of the first release.
-
-Build gates:
-- Backend automation contract verified.
-- OAuth integrations implemented and tested.
+## Acceptance gates
+- Production backend build succeeds.
+- Provider OAuth integrations are authorized and tested.
 - Android release build succeeds.
-- Real-device voice and job-status tests pass.
-- Publishing is never reported successful without platform-side verification.
+- Real-device voice, camera/screen permissions and job-status tests pass.
+- External publishing is never reported successful without platform-side verification.
