@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.27.0-integration-foundation",
+  "version": "4.28.0-execution-foundation",
   "private": true,
   "scripts": {
     "dev": "next dev",
