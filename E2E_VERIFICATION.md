@@ -1,17 +1,23 @@
-# SAM end-to-end verification matrix
+# SAM end-to-end verification matrix — v4.27.0
 
-## Automated/static checks
-- Next.js production build command is defined: npm run build.
-- GitHub Actions build workflow uses Node 24 and npm install without lockfile cache dependency.
-- OAuth state is signed and time-limited.
-- OAuth callbacks verify provider identity before persisting a connection.
-- Social uploads perform provider-side post-upload/status verification before reporting verified.
-- Job transitions require expected state and ownership.
-- Paper trading has no real-money execution path.
-- Android requests microphone permission only and uses the system speech recognizer.
+## Verified now
+- SAM Supabase tables have RLS enabled.
+- Security Advisor currently reports only the Pro-plan leaked-password-protection warning.
+- Queue schema has retry metadata.
+- Queued jobs can be claimed atomically with row locking.
+- Worker is fail-closed and records retry/failure state.
+- Credential storage has encrypted fields available.
+- No provider secret is committed to the repository.
 
-## Live checks
-Live provider upload, dedicated Supabase provisioning, Vercel production build, and physical Android microphone testing require external account/device access. SAM therefore fails closed instead of reporting those checks as passed without evidence.
+## Not yet verified
+- Live Google/YouTube authorization and upload.
+- Live Meta/Facebook/Instagram authorization and publishing.
+- Live TikTok authorization and posting.
+- Amazon seller/API authorization and live operation.
+- Production Vercel build after the latest commits.
+- Real microphone speech recognition on a physical Android device.
+- Real camera/screen permission acceptance on a physical device.
+- Signed Android APK installation and acceptance testing.
 
-## Release
-The source checkpoint is tracked in SAM_CHECKPOINT_4.25.0.md.
+## Acceptance rule
+Unverified external-account or hardware tests are explicitly marked incomplete rather than being reported as passed.
