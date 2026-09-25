@@ -48,7 +48,6 @@ export async function GET(request: Request) {
           method: "PATCH",
           body: JSON.stringify({
             status: "running",
-            started_at: new Date().toISOString(),
             error: null,
           }),
         },
