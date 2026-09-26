@@ -29,12 +29,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const url = process.env.SAM_SUPABASE_URL;
+  const supabaseUrl = process.env.SAM_SUPABASE_URL;
   const token = process.env.SAM_SUPABASE_ACCESS_TOKEN;
-  if (!url || !token) return NextResponse.json({ error: "Worker storage is not configured" }, { status: 503 });
+  if (!supabaseUrl || !token) return NextResponse.json({ error: "Worker storage is not configured" }, { status: 503 });
 
   async function query<T = unknown>(path: string, init: RequestInit = {}): Promise<T> {
-    const response = await fetch(url.replace(/\/$/, "") + path, {
+    const response = await fetch(supabaseUrl.replace(/\/$/, "") + path, {
       ...init,
       headers: {
         apikey: token,
