@@ -24,13 +24,13 @@ async function fetchBlob(url: string) {
 }
 
 export async function GET(request: Request) {
-  const secret = process.env.SAM_CRON_SECRET;
+  const secret = process.env.SAM_CRON_SECRET || process.env.CRON_SECRET;
   if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabaseUrl = process.env.SAM_SUPABASE_URL;
-  const token = process.env.SAM_SUPABASE_ACCESS_TOKEN;
+  const supabaseUrl = process.env.SAM_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const token = process.env.SAM_SUPABASE_ACCESS_TOKEN || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !token) return NextResponse.json({ error: "Worker storage is not configured" }, { status: 503 });
   const supabaseBaseUrl = supabaseUrl;
   const accessToken = token;
