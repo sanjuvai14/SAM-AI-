@@ -1,4 +1,3 @@
-import { requireEnv } from "./social-oauth";
 import { decryptSecret, encryptSecret } from "./crypto";
 
 type Connection = {
@@ -14,14 +13,26 @@ type Connection = {
   metadata: Record<string, unknown>;
 };
 
+function supabaseUrl() {
+  return process.env.SAM_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+}
+
+function serviceToken() {
+  return process.env.SAM_SUPABASE_ACCESS_TOKEN || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+}
+
 function endpoint(path: string) {
-  return requireEnv("SAM_SUPABASE_URL").replace(/\/$/, "") + "/rest/v1/" + path;
+  const url = supabaseUrl();
+  if (!url) throw new Error("SAM Supabase URL is missing.");
+  return url.replace(/\/$/, "") + "/rest/v1/" + path;
 }
 
 function headers() {
+  const token = serviceToken();
+  if (!token) throw new Error("SAM Supabase service token is missing.");
   return {
-    apikey: requireEnv("SAM_SUPABASE_ACCESS_TOKEN"),
-    Authorization: "Bearer " + requireEnv("SAM_SUPABASE_ACCESS_TOKEN"),
+    apikey: token,
+    Authorization: "Bearer " + token,
     "Content-Type": "application/json",
     Prefer: "return=representation"
   };
