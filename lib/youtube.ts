@@ -7,7 +7,7 @@ const UPLOAD = "https://www.googleapis.com/upload/youtube/v3/videos";
 
 export function youtubeAuthorizationUrl(request: Request, state: string) {
   const params = new URLSearchParams({
-    client_id: requireEnv("YOUTUBE_CLIENT_ID"),
+    client_id: process.env.YOUTUBE_CLIENT_ID || requireEnv("GOOGLE_CLIENT_ID"),
     redirect_uri: oauthRedirectUri(request, "youtube"),
     response_type: "code",
     access_type: "offline",
@@ -22,8 +22,8 @@ export function youtubeAuthorizationUrl(request: Request, state: string) {
 export async function youtubeExchangeCode(request: Request, code: string) {
   const body = new URLSearchParams({
     code,
-    client_id: requireEnv("YOUTUBE_CLIENT_ID"),
-    client_secret: requireEnv("YOUTUBE_CLIENT_SECRET"),
+    client_id: process.env.YOUTUBE_CLIENT_ID || requireEnv("GOOGLE_CLIENT_ID"),
+    client_secret: process.env.YOUTUBE_CLIENT_SECRET || requireEnv("GOOGLE_CLIENT_SECRET"),
     redirect_uri: oauthRedirectUri(request, "youtube"),
     grant_type: "authorization_code"
   });
