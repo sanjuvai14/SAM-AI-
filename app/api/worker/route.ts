@@ -32,13 +32,15 @@ export async function GET(request: Request) {
   const supabaseUrl = process.env.SAM_SUPABASE_URL;
   const token = process.env.SAM_SUPABASE_ACCESS_TOKEN;
   if (!supabaseUrl || !token) return NextResponse.json({ error: "Worker storage is not configured" }, { status: 503 });
+  const supabaseBaseUrl = supabaseUrl;
+  const accessToken = token;
 
   async function query<T = unknown>(path: string, init: RequestInit = {}): Promise<T> {
-    const response = await fetch(supabaseUrl.replace(/\/$/, "") + path, {
+    const response = await fetch(supabaseBaseUrl.replace(/\/$/, "") + path, {
       ...init,
       headers: {
-        apikey: token,
-        Authorization: `Bearer ${token}`,
+        apikey: accessToken,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
         Prefer: "return=representation",
         ...(init.headers ?? {}),
