@@ -35,6 +35,10 @@ export default function SAMWorkspace() {
   const [proposal, setProposal] = useState<CommandProposal | null>(null);
   const [youtubeConnected, setYoutubeConnected] = useState(false);
   const [youtubeName, setYoutubeName] = useState("");
+  const [youtubeFile, setYoutubeFile] = useState<File | null>(null);
+  const [youtubeTitle, setYoutubeTitle] = useState("");
+  const [youtubeUploadBusy, setYoutubeUploadBusy] = useState(false);
+  const [youtubeUploadMessage, setYoutubeUploadMessage] = useState("");
   const recognitionRef = useRef<any>(null);
   const continuousRef = useRef(false);
   const end = useRef<HTMLDivElement>(null);
@@ -106,6 +110,33 @@ export default function SAMWorkspace() {
       if (fromVoice) speak(error);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function uploadYoutubeVideo(e: FormEvent) {
+    e.preventDefault();
+    if (!youtubeFile || !youtubeTitle.trim() || youtubeUploadBusy) return;
+    if (youtubeFile.size > 4 * 1024 * 1024) {
+      setYoutubeUploadMessage("এখন এই আপলোডে সর্বোচ্চ 4 MB ফাইল নেওয়া যায়।");
+      return;
+    }
+    setYoutubeUploadBusy(true);
+    setYoutubeUploadMessage("YouTube-এ private upload চলছে…");
+    try {
+      const form = new FormData();
+      form.append("video", youtubeFile);
+      form.append("title", youtubeTitle.trim());
+      form.append("privacyStatus", "private");
+      const response = await fetch("/api/youtube/upload", { method: "POST", body: form, credentials: "same-origin" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "YouTube upload failed.");
+      setYoutubeUploadMessage(`Upload verified: ${data.video?.id || "video ID unavailable"} (private)`);
+      setYoutubeFile(null);
+      setYoutubeTitle("");
+    } catch (error) {
+      setYoutubeUploadMessage(error instanceof Error ? error.message : "YouTube upload failed.");
+    } finally {
+      setYoutubeUploadBusy(false);
     }
   }
 
