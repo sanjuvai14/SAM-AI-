@@ -5,8 +5,14 @@ import { getSocialConnection } from "@/lib/social-connections";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  let userId: string;
   try {
-    const { userId } = await requireSupabaseAuthContext(request);
+    ({ userId } = await requireSupabaseAuthContext(request));
+  } catch {
+    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+  }
+
+  try {
     const connection = await getSocialConnection(userId, "youtube");
     if (!connection) return NextResponse.json({ connected: false });
     return NextResponse.json({
@@ -20,6 +26,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch {
-    return NextResponse.json({ error: "YouTube connection status is unavailable." }, { status: 503 });
+    return NextResponse.json({ error: "YouTube connection status is unavailable. Check SAM database and credential-encryption configuration." }, { status: 503 });
   }
 }
