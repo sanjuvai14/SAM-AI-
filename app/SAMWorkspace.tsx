@@ -33,11 +33,22 @@ export default function SAMWorkspace() {
   const [heard, setHeard] = useState("");
   const [voiceNotice, setVoiceNotice] = useState("");
   const [proposal, setProposal] = useState<CommandProposal | null>(null);
+  const [youtubeConnected, setYoutubeConnected] = useState(false);
+  const [youtubeName, setYoutubeName] = useState("");
   const recognitionRef = useRef<any>(null);
   const continuousRef = useRef(false);
   const end = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    void fetch("/api/youtube/status", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (data?.connected) {
+          setYoutubeConnected(true);
+          setYoutubeName(data.account?.name || "YouTube connected");
+        }
+      })
+      .catch(() => undefined);
     const saved = localStorage.getItem("sam-chat");
     if (saved) try {
       const parsed = JSON.parse(saved);
@@ -219,6 +230,9 @@ export default function SAMWorkspace() {
         <header className="sam-header">
           <div><b>SAM Workspace</b><small>Private · voice control ready</small></div>
           <div className="sam-header-actions">
+            <a href="/api/oauth/youtube" title={youtubeConnected ? youtubeName : "Connect your YouTube channel"} style={{ color: "inherit", textDecoration: "none", fontSize: 13, padding: "8px 10px", border: "1px solid var(--sam-border, #293244)", borderRadius: 10 }}>
+              {youtubeConnected ? "YouTube connected ✓" : "Connect YouTube"}
+            </a>
             <select aria-label="Voice language" value={voiceLang} onChange={(e) => setVoiceLang(e.target.value)}>
               {VOICE_LANGS.map((lang) => <option key={lang.value} value={lang.value}>{lang.label}</option>)}
             </select>
