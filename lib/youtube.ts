@@ -33,6 +33,26 @@ export async function youtubeExchangeCode(request: Request, code: string) {
   return data;
 }
 
+export async function youtubeRefreshAccessToken(refreshToken: string) {
+  const body = new URLSearchParams({
+    client_id: process.env.YOUTUBE_CLIENT_ID || requireEnv("GOOGLE_CLIENT_ID"),
+    client_secret: process.env.YOUTUBE_CLIENT_SECRET || requireEnv("GOOGLE_CLIENT_SECRET"),
+    refresh_token: refreshToken,
+    grant_type: "refresh_token",
+  });
+  const response = await fetch(TOKEN, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body,
+    cache: "no-store",
+  });
+  const data = await response.json();
+  if (!response.ok || typeof data.access_token !== "string") {
+    throw new Error(data.error_description || "YouTube access token refresh failed. Reconnect YouTube.");
+  }
+  return data as { access_token: string; expires_in?: number; scope?: string };
+}
+
 async function youtubeGet(token: string, path: string) {
   const response = await fetch(API + path, { headers: { Authorization: "Bearer " + token } });
   const data = await response.json();
