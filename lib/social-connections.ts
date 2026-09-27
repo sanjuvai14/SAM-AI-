@@ -39,7 +39,20 @@ function headers() {
 }
 
 export async function saveSocialConnection(input: Omit<Connection, "id" | "created_at" | "updated_at">) {
-  const credential = encryptSecret(JSON.stringify({ access_token: input.access_token, refresh_token: input.refresh_token }));
+  let refreshToken = input.refresh_token;
+
+  // Google may omit refresh_token on a later authorization. Preserve the
+  // already-stored refresh token instead of accidentally replacing it.
+  if (!refreshToken) {
+    const existing = await getSocialConnection(input.user_id, input.platform);
+    refreshToken = existing?.refresh_token || null;
+  }
+
+  const credential = encryptSecret(JSON.stringify({
+    access_token: input.access_token,
+    refresh_token: refreshToken
+  }));
+
   const response = await fetch(endpoint("sam_social_connections?on_conflict=user_id,platform"), {
     method: "POST",
     headers: { ...headers(), Prefer: "resolution=merge-duplicates,return=representation" },
