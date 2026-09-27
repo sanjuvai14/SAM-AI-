@@ -13,7 +13,7 @@ export function youtubeAuthorizationUrl(request: Request, state: string) {
     access_type: "offline",
     prompt: "consent",
     include_granted_scopes: "true",
-    scope: "https://www.googleapis.com/auth/youtube.upload",
+    scope: "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
     state
   });
   return AUTH + "?" + params.toString();
