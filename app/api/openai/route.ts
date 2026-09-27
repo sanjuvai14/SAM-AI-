@@ -12,7 +12,13 @@ export async function GET() {
   return NextResponse.json({ ok: true, service: "sam-ai", provider: process.env.AI_PROVIDER || "openai" });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  try {
+    await requireSupabaseAuthContext(request);
+  } catch {
+    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const messages = Array.isArray(body?.messages) ? body.messages as Msg[] : [];
@@ -23,9 +29,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "AI provider is not configured for this deployment yet." }, { status: 503 });
     }
     if (!key) {
-      return NextResponse.json({ error: "SAM is ready, but the server-side AI API key is not configured yet." }, { status: 503 });
+      return NextResponse.json({ error: "SAM server-side AI API key is not configured." }, { status: 503 });
     }
-
     if (!messages.length) {
       return NextResponse.json({ error: "At least one message is required." }, { status: 400 });
     }
@@ -40,7 +45,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No valid non-empty messages were provided." }, { status: 400 });
     }
 
-    // Keep the request bounded even when a client sends many long messages.
     const bounded = clean.reduce<typeof clean>((acc, item) => {
       const used = acc.reduce((sum, m) => sum + m.content.length, 0);
       if (used >= 60000) return acc;
