@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { requireSupabaseAuthContext } from "@/lib/supabase-auth";
 import { buildCommandProposal } from "@/lib/command-engine";
 
 export async function GET() {
@@ -10,7 +11,13 @@ export async function GET() {
   });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  try {
+    await requireSupabaseAuthContext(request);
+  } catch {
+    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const transcript = typeof body?.transcript === "string" ? body.transcript : "";
