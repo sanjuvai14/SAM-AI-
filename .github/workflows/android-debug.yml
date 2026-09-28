@@ -21,8 +21,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Add Android platform
-        run: npx cap add android
+      - name: Regenerate Android platform
+        run: |
+          rm -rf android
+          npx cap add android
 
       - name: Sync Capacitor
         run: npx cap sync android
