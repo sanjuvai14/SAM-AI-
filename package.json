@@ -1,6 +1,6 @@
 {
   "name": "sam-private-ai",
-  "version": "4.28.0-execution-foundation",
+  "version": "4.29.0-android-wrapper",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -14,13 +14,15 @@
   "dependencies": {
     "next": "16.3.0",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "@capacitor/core": "^7.4.3"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "typescript": "^5.8.0"
+    "typescript": "^5.8.0",
+    "@capacitor/cli": "^7.4.3"
   },
   "type": "module"
 }
