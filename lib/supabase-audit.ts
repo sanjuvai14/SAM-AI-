@@ -3,7 +3,7 @@ import type { AuditEvent, AuditStore } from "./audit";
 export class SupabaseAuditStore implements AuditStore {
   async append(event: AuditEvent): Promise<void> {
     const url = process.env.SAM_SUPABASE_URL;
-    const accessToken = process.env.SAM_SUPABASE_ACCESS_TOKEN;
+    const accessToken = process.env.SAM_SUPABASE_ACCESS_TOKEN || process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!url || !accessToken) {
       throw new Error("SAM audit persistence is not configured.");
     }
