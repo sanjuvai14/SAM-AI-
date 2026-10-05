@@ -39,6 +39,8 @@ export default function SAMWorkspace() {
   const [youtubeTitle, setYoutubeTitle] = useState("");
   const [youtubeUploadBusy, setYoutubeUploadBusy] = useState(false);
   const [youtubeUploadMessage, setYoutubeUploadMessage] = useState("");
+  const [activeView, setActiveView] = useState<"workspace" | "projects" | "tasks" | "library" | "plugins" | "device" | "settings">("workspace");
+  const [enabledPlugins, setEnabledPlugins] = useState<Record<string, boolean>>({ YouTube: true, "Web tools": true, Calendar: false, Gmail: false, "Facebook / Instagram": false, TikTok: false });
   const recognitionRef = useRef<any>(null);
   const continuousRef = useRef(false);
   const end = useRef<HTMLDivElement>(null);
@@ -271,7 +273,7 @@ export default function SAMWorkspace() {
           </div>
         </header>
 
-        <div className="sam-chat">
+        {panel()}\n        <div className={activeView === "workspace" ? "sam-chat" : "sam-chat sam-chat-hidden"}>
           <div className="sam-welcome">
             <div className="sam-orb">S</div>
             <div className="sam-kicker">PRIVATE AI ASSISTANT</div>
