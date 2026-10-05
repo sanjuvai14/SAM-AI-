@@ -4,96 +4,116 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.media.projection.MediaProjectionManager
 import android.os.Bundle
-import android.provider.MediaStore
 import android.speech.RecognizerIntent
+import android.webkit.PermissionRequest
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.FrameLayout
 import java.util.Locale
+import org.json.JSONObject
 
 class MainActivity : Activity() {
-    private lateinit var transcript: TextView
+    private lateinit var webView: WebView
     private val voiceCode = 1001
-    private val cameraCode = 1002
-    private val screenCode = 1003
     private var language = "bn-BD"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(32, 48, 32, 32)
-        }
-        transcript = TextView(this)
-        transcript.text = "SAM - Private AI\nVoice / Camera / Screen ready"
-        layout.addView(transcript)
 
-        layout.addView(Button(this).apply {
-            text = "Speak to SAM"
+        webView = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            settings.mediaPlaybackRequiresUserGesture = false
+            settings.allowFileAccess = false
+            settings.allowContentAccess = false
+            webViewClient = WebViewClient()
+            webChromeClient = object : WebChromeClient() {
+                override fun onPermissionRequest(request: PermissionRequest) {
+                    runOnUiThread {
+                        val allowed = request.resources.filter {
+                            it == PermissionRequest.RESOURCE_AUDIO_CAPTURE ||
+                            it == PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                        }.toTypedArray()
+                        if (allowed.isNotEmpty()) request.grant(allowed)
+                    }
+                }
+            }
+            addJavascriptInterface(VoiceBridge(), "SAMVoiceBridge")
+        }
+
+        val root = FrameLayout(this)
+        root.addView(webView, FrameLayout.LayoutParams(-1, -1))
+
+        val voiceButton = Button(this).apply {
+            text = "🎙 SAM Voice"
             setOnClickListener { startVoice() }
-        })
-        layout.addView(Button(this).apply {
-            text = "English voice"
-            setOnClickListener { language = "en-US"; startVoice() }
-        })
-        layout.addView(Button(this).apply {
-            text = "বাংলা voice"
-            setOnClickListener { language = "bn-BD"; startVoice() }
-        })
-        layout.addView(Button(this).apply {
-            text = "हिन्दी voice"
-            setOnClickListener { language = "hi-IN"; startVoice() }
-        })
-        layout.addView(Button(this).apply {
-            text = "Camera"
-            setOnClickListener { openCamera() }
-        })
-        layout.addView(Button(this).apply {
-            text = "Share screen"
-            setOnClickListener { requestScreenCapture() }
-        })
-
-        setContentView(layout)
-        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
-            checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA), 1004)
+            contentDescription = "Speak to SAM"
         }
+        val buttonParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        )
+        buttonParams.gravity = android.view.Gravity.BOTTOM or android.view.Gravity.END
+        buttonParams.setMargins(0, 0, 24, 24)
+        root.addView(voiceButton, buttonParams)
+
+        setContentView(root)
+
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), voiceCode)
+        }
+
+        webView.loadUrl("https://sam-ai-2026.vercel.app")
     }
 
     private fun startVoice() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), voiceCode)
+            return
+        }
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, language)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
             putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak to SAM")
         }
         startActivityForResult(intent, voiceCode)
     }
 
-    private fun openCamera() {
-        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.CAMERA), cameraCode)
-            return
+    private fun putVoiceIntoSam(text: String) {
+        val safe = JSONObject.quote(text)
+        val script = "(function(){const t=document.querySelector('textarea[aria-label="Message"]');" +
+            "if(!t)return false;" +
+            "const s=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set;" +
+            "s.call(t,$safe);t.dispatchEvent(new Event('input',{bubbles:true}));t.focus();return true;})()"
+        webView.evaluateJavascript(script, null)
+    }
+
+    private inner class VoiceBridge {
+        @android.webkit.JavascriptInterface
+        fun setLanguage(code: String) {
+            language = when (code) {
+                "en-US", "hi-IN" -> code
+                else -> "bn-BD"
+            }
         }
-        startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE), cameraCode)
     }
 
-    private fun requestScreenCapture() {
-        val manager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        startActivityForResult(manager.createScreenCaptureIntent(), screenCode)
-    }
-
-    @Deprecated("Compatibility with the minimal Android client")
+    @Deprecated("Compatibility with Android speech recognition")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            voiceCode -> if (resultCode == RESULT_OK) {
-                val result = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
-                if (!result.isNullOrBlank()) transcript.text = "SAM heard (" + Locale.forLanguageTag(language).displayLanguage + "):\n" + result
-            }
-            cameraCode -> if (resultCode == RESULT_OK) transcript.text = "Camera permission/capture intent completed."
-            screenCode -> if (resultCode == RESULT_OK) transcript.text = "Screen capture permission granted for this session."
+        if (requestCode == voiceCode && resultCode == RESULT_OK) {
+            val result = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
+            if (!result.isNullOrBlank()) putVoiceIntoSam(result)
         }
+    }
+
+    override fun onDestroy() {
+        webView.removeJavascriptInterface("SAMVoiceBridge")
+        webView.destroy()
+        super.onDestroy()
     }
 }
