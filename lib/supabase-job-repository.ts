@@ -9,7 +9,7 @@ type SupabaseConfig = {
 
 function config(): SupabaseConfig {
   const url = process.env.SAM_SUPABASE_URL;
-  const accessToken = process.env.SAM_SUPABASE_ACCESS_TOKEN;
+  const accessToken = process.env.SAM_SUPABASE_ACCESS_TOKEN || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !accessToken) {
     throw new Error(
