@@ -96,6 +96,28 @@ export async function saveSocialConnection(input: Omit<Connection, "id" | "creat
   return verified;
 }
 
+export async function updateSocialConnectionSelection(
+  userId: string,
+  platform: Connection["platform"],
+  externalAccountId: string,
+  accountName: string | null,
+  metadata: Record<string, unknown>
+) {
+  const existing = await getSocialConnection(userId, platform);
+  if (!existing) throw new Error("Social account is not connected.");
+  return saveSocialConnection({
+    user_id: userId,
+    platform,
+    external_account_id: externalAccountId,
+    account_name: accountName,
+    access_token: existing.access_token,
+    refresh_token: existing.refresh_token,
+    expires_at: existing.expires_at,
+    scopes: existing.scopes,
+    metadata
+  });
+}
+
 export async function getSocialConnection(userId: string, platform: Connection["platform"]) {
   const params = new URLSearchParams({
     user_id: "eq." + userId,
