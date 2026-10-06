@@ -8,7 +8,7 @@ function scopes() {
 
 export function metaAuthorizationUrl(request: Request, state: string) {
   const params = new URLSearchParams({
-    client_id: requireEnv("META_APP_ID"),
+    client_id: process.env.META_APP_ID || requireEnv("FACEBOOK_CLIENT_ID"),
     redirect_uri: oauthRedirectUri(request, "meta"),
     response_type: "code",
     scope: scopes(),
@@ -19,7 +19,7 @@ export function metaAuthorizationUrl(request: Request, state: string) {
 
 export async function metaExchangeCode(request: Request, code: string) {
   const params = new URLSearchParams({
-    client_id: requireEnv("META_APP_ID"),
+    client_id: process.env.META_APP_ID || requireEnv("FACEBOOK_CLIENT_ID"),
     client_secret: requireEnv("META_APP_SECRET"),
     redirect_uri: oauthRedirectUri(request, "meta"),
     code,
