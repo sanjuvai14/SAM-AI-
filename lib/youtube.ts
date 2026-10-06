@@ -60,9 +60,14 @@ async function youtubeGet(token: string, path: string) {
   return data;
 }
 
-export async function youtubeVerify(token: string) {
+export async function youtubeListChannels(token: string) {
   const data = await youtubeGet(token, "/channels?part=id,snippet&mine=true");
-  return { verified: Array.isArray(data.items) && data.items.length > 0, channel: data.items?.[0] || null };
+  return Array.isArray(data.items) ? data.items : [];
+}
+
+export async function youtubeVerify(token: string) {
+  const channels = await youtubeListChannels(token);
+  return { verified: channels.length > 0, channel: channels[0] || null, channels };
 }
 
 export async function youtubeUpload(token: string, video: Blob, title: string, description: string, privacyStatus: "private" | "public" | "unlisted" = "private") {
