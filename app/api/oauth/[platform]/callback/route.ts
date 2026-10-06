@@ -33,19 +33,20 @@ export async function GET(request: NextRequest, context: { params: Promise<{ pla
       const verification = await metaVerify(tokens.access_token);
       if (!verification.verified) throw new Error("Meta account verification failed.");
       await saveSocialConnection({
-        user_id: identity.userId, platform: "meta", external_account_id: null, account_name: "Meta connection",
-        access_token: tokens.access_token, refresh_token: null, expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null,
-        scopes: ["pages_manage_posts","pages_read_engagement","instagram_basic","instagram_content_publish"], metadata: { pages: verification.pages }
+        user_id: identity.userId, platform: "meta", external_account_id: verification.id,
+        account_name: verification.name || "Meta connection", access_token: tokens.access_token,
+        refresh_token: null, expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null,
+        scopes: String(process.env.META_SCOPES || "public_profile,email,pages_show_list,pages_read_engagement,pages_manage_posts,instagram_basic,instagram_content_publish").split(",").filter(Boolean),
+        metadata: { account: { id: verification.id, name: verification.name }, pages: verification.pages }
       });
     } else {
       const tokens = await tiktokExchangeCode(request, code);
       const verification = await tiktokVerify(tokens.access_token);
-      if (!verification.verified) throw new Error("TikTok creator verification failed.");
       await saveSocialConnection({
-        user_id: identity.userId, platform: "tiktok", external_account_id: tokens.open_id || null,
-        account_name: verification.creator?.creator_nickname || null, access_token: tokens.access_token,
+        user_id: identity.userId, platform: "tiktok", external_account_id: verification.open_id || tokens.open_id || null,
+        account_name: verification.display_name || "TikTok account", access_token: tokens.access_token,
         refresh_token: tokens.refresh_token || null, expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null,
-        scopes: String(tokens.scope || "").split(",").filter(Boolean), metadata: { creator: verification.creator || null }
+        scopes: String(tokens.scope || "").split(",").filter(Boolean), metadata: { account: verification }
       });
     }
     return NextResponse.json({ connected: true, platform, verification: { verified: true, checkedAt: new Date().toISOString() } });
