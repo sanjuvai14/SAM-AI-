@@ -74,8 +74,15 @@ export async function saveSocialConnection(input: Omit<Connection, "id" | "creat
     })
   });
   const data = await response.json().catch(() => []);
-  if (!response.ok) throw new Error("Failed to persist social connection.");
-  return data[0] as Connection;
+  if (!response.ok) {
+    const detail = typeof data?.message === "string" ? data.message : typeof data?.hint === "string" ? data.hint : "Failed to persist social connection.";
+    throw new Error(detail);
+  }
+  const saved = data[0] as Connection | undefined;
+  if (!saved?.id) throw new Error("Social connection was not returned after persistence.");
+  const verified = await getSocialConnection(input.user_id, input.platform);
+  if (!verified?.external_account_id) throw new Error("Social connection was saved but could not be verified.");
+  return verified;
 }
 
 export async function getSocialConnection(userId: string, platform: Connection["platform"]) {
