@@ -42,6 +42,8 @@ export default function SAMWorkspace() {
   const [youtubeTitle, setYoutubeTitle] = useState("");
   const [youtubeUploadBusy, setYoutubeUploadBusy] = useState(false);
   const [youtubeUploadMessage, setYoutubeUploadMessage] = useState("");
+  const [socialConnections, setSocialConnections] = useState<Record<string, any>>({});
+  const [socialBusy, setSocialBusy] = useState(false);
   const [activeView, setActiveView] = useState<View>("chat");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -53,6 +55,10 @@ export default function SAMWorkspace() {
   const end = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    void fetch("/api/social/connections", { cache: "no-store", credentials: "same-origin" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setSocialConnections(data); })
+      .catch(() => undefined);
     void fetch("/api/youtube/status", { cache: "no-store" })
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
@@ -188,8 +194,30 @@ export default function SAMWorkspace() {
     if (activeView === "projects") return <div className="sam-panel"><h2>Projects</h2><p>তোমার কাজগুলো project অনুযায়ী সাজাও।</p><div className="sam-empty">No projects yet. শুরু করতে Chat-এ project তৈরি করতে বলো।</div></div>;
     if (activeView === "tasks") return <div className="sam-panel"><h2>Tasks & automation</h2><p>Scheduled work, automation এবং approval-gated actions এখানে থাকবে।</p><div className="sam-empty">Automation control center ready for connected integrations.</div></div>;
     if (activeView === "library") return <div className="sam-panel"><h2>Library</h2><p>Saved conversations, files এবং generated assets-এর জায়গা।</p><div className="sam-empty">Your saved library will appear here.</div></div>;
-    if (activeView === "plugins") return <div className="sam-panel"><h2>Apps & plugins</h2><p>SAM-এর সাথে কোন service ব্যবহার করবে তা এখান থেকে নিয়ন্ত্রণ করো।</p>
-      {Object.entries(enabledPlugins).map(([name, enabled]) => <div className="sam-plugin" key={name}><div><b>{name}</b><small>{enabled ? "Enabled" : "Disabled"}</small></div><button onClick={() => setEnabledPlugins((p) => ({ ...p, [name]: !p[name] }))}>{enabled ? "Disable" : "Enable"}</button></div>)}</div>;
+    if (activeView === "plugins") {
+      const social = [
+        { key: "youtube", name: "YouTube", icon: "▶", href: "/api/oauth/youtube", desc: "Google account দিয়ে YouTube channel connect" },
+        { key: "meta", name: "Facebook / Instagram", icon: "f", href: "/api/oauth/meta", desc: "Meta account ও অনুমোদিত Pages/Instagram access" },
+        { key: "tiktok", name: "TikTok", icon: "♪", href: "/api/oauth/tiktok", desc: "TikTok account ও approved API scopes" },
+      ];
+      return <div className="sam-panel"><h2>Apps & social connections</h2><p>এখানে Enable/Disable নয়—প্রতিটি service-এ ঢুকে তার নিজস্ব login/consent screen থেকে account connect করবে। এরপর SAM শুধু অনুমোদিত permission-ই ব্যবহার করবে।</p>
+        <div className="sam-connection-list">
+          {social.map((item) => {
+            const connection = socialConnections[item.key];
+            const connected = Boolean(connection?.connected);
+            const scopes = connection?.account?.scopes || [];
+            return <div className="sam-connection-card" key={item.key}>
+              <div className="sam-connection-main"><div className="sam-service-icon">{item.icon}</div><div><b>{item.name}</b><small>{connected ? (connection.account.name || "Connected account") : item.desc}</small></div></div>
+              <div className="sam-connection-actions">
+                {connected ? <><span className="sam-connected">Connected</span><button type="button" onClick={() => alert("Disconnect is handled through the provider authorization settings or SAM account security controls.")}>Manage</button></> : <a className="sam-connect" href={item.href}>Connect</a>}
+              </div>
+              {connected && <details className="sam-permissions"><summary>Granted permissions ({scopes.length})</summary><div>{scopes.map((scope: string) => <span key={scope}>{scope}</span>)}</div></details>}
+            </div>;
+          })}
+        </div>
+        <div className="sam-empty">Permission principle: request the smallest useful scope, show the granted scopes, keep tokens encrypted server-side, and require re-authorization when a provider token expires or is revoked.</div>
+      </div>;
+    }
     if (activeView === "device") return <div className="sam-panel"><h2>Device access</h2><p>Browser permission-এর মাধ্যমে SAM microphone, camera এবং screen sharing ব্যবহার করতে পারে। OS-level permission সবসময় তোমাকেই অনুমতি দিতে হবে।</p><div className="sam-access-grid">
       <button onClick={async () => { try { await navigator.mediaDevices.getUserMedia({ audio: true }); } catch {} }}>🎙 Microphone</button>
       <button onClick={async () => { try { await navigator.mediaDevices.getUserMedia({ video: true }); } catch {} }}>📷 Camera</button>
@@ -230,7 +258,7 @@ export default function SAMWorkspace() {
           <button className="sam-mobile-menu" onClick={() => setSidebarOpen(true)} aria-label="Open sidebar">☰</button>
           <div className="sam-header-title"><b>{activeView === "chat" ? "SAM" : activeView === "plugins" ? "Apps & plugins" : activeView[0].toUpperCase() + activeView.slice(1)}</b><small>{activeView === "chat" ? "Private AI assistant" : "SAM workspace"}</small></div>
           <div className="sam-header-actions">
-            <a href="/api/oauth/youtube" title={youtubeConnected ? youtubeName : "Connect your YouTube channel"}>{youtubeConnected ? "YouTube ✓" : "Connect YouTube"}</a>
+            <button type="button" onClick={() => go("plugins")}>{Object.values(socialConnections).filter((v:any) => v?.connected).length ? "Connected apps ✓" : "Connect apps"}</button>
             <select aria-label="Voice language" value={voiceLang} onChange={(e) => setVoiceLang(e.target.value)}>{VOICE_LANGS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}</select>
             <button onClick={clear}>New</button>
           </div>
