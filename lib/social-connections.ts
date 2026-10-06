@@ -17,8 +17,11 @@ function supabaseUrl() {
   return process.env.SAM_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 }
 
+// Server-side writes must prefer the service-role credential. A normal
+// user access token is intentionally only a fallback because RLS allows
+// users to read their own connections but not write encrypted credentials.
 function serviceToken() {
-  return process.env.SAM_SUPABASE_ACCESS_TOKEN || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  return process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SAM_SUPABASE_ACCESS_TOKEN || "";
 }
 
 function endpoint(path: string) {
@@ -29,7 +32,7 @@ function endpoint(path: string) {
 
 function headers() {
   const token = serviceToken();
-  if (!token) throw new Error("SAM Supabase service token is missing.");
+  if (!token) throw new Error("SAM Supabase server credential is missing.");
   return {
     apikey: token,
     Authorization: "Bearer " + token,
@@ -41,8 +44,6 @@ function headers() {
 export async function saveSocialConnection(input: Omit<Connection, "id" | "created_at" | "updated_at">) {
   let refreshToken = input.refresh_token;
 
-  // Google may omit refresh_token on a later authorization. Preserve the
-  // already-stored refresh token instead of accidentally replacing it.
   if (!refreshToken) {
     const existing = await getSocialConnection(input.user_id, input.platform);
     refreshToken = existing?.refresh_token || null;
@@ -73,36 +74,53 @@ export async function saveSocialConnection(input: Omit<Connection, "id" | "creat
       metadata: input.metadata
     })
   });
+
   const data = await response.json().catch(() => []);
   if (!response.ok) {
-    const detail = typeof data?.message === "string" ? data.message : typeof data?.hint === "string" ? data.hint : "Failed to persist social connection.";
+    const detail = typeof data?.message === "string"
+      ? data.message
+      : typeof data?.hint === "string"
+        ? data.hint
+        : "Failed to persist social connection.";
     throw new Error(detail);
   }
+
   const saved = data[0] as Connection | undefined;
   if (!saved?.id) throw new Error("Social connection was not returned after persistence.");
+
   const verified = await getSocialConnection(input.user_id, input.platform);
-  if (!verified?.external_account_id) throw new Error("Social connection was saved but could not be verified.");
+  if (!verified?.external_account_id) {
+    throw new Error("Social connection was saved but could not be verified.");
+  }
+
   return verified;
 }
 
 export async function getSocialConnection(userId: string, platform: Connection["platform"]) {
-  const params = new URLSearchParams({ user_id: "eq." + userId, platform: "eq." + platform, select: "*" });
-  const response = await fetch(endpoint("sam_social_connections?" + params.toString()), { headers: headers(), cache: "no-store" });
+  const params = new URLSearchParams({
+    user_id: "eq." + userId,
+    platform: "eq." + platform,
+    select: "*"
+  });
+  const response = await fetch(endpoint("sam_social_connections?" + params.toString()), {
+    headers: headers(),
+    cache: "no-store"
+  });
   const data = await response.json().catch(() => []);
   if (!response.ok) throw new Error("Failed to load social connection.");
   const row = data[0];
   if (!row) return null;
 
   if (row.access_token_ciphertext && row.token_iv && row.token_tag) {
-    const credentials = JSON.parse(decryptSecret(row.access_token_ciphertext, row.token_iv, row.token_tag)) as {
-      access_token?: string;
-      refresh_token?: string | null;
-    };
+    const credentials = JSON.parse(
+      decryptSecret(row.access_token_ciphertext, row.token_iv, row.token_tag)
+    ) as { access_token?: string; refresh_token?: string | null };
     if (!credentials.access_token) throw new Error("Social credential is unavailable.");
     row.access_token = credentials.access_token;
     row.refresh_token = credentials.refresh_token || null;
   } else if (!row.access_token) {
     throw new Error("Social credential is unavailable.");
   }
+
   return row as Connection;
 }
