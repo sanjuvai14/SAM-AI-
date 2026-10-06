@@ -8,7 +8,7 @@ function scopes() { return process.env.TIKTOK_SCOPES || "user.info.basic,video.l
 
 export function tiktokAuthorizationUrl(request: Request, state: string) {
   const params = new URLSearchParams({
-    client_key: requireEnv("TIKTOK_CLIENT_KEY"), response_type: "code", scope: scopes(),
+    client_key: process.env.TIKTOK_CLIENT_KEY || requireEnv("TIKTOK_CLIENT_ID"), response_type: "code", scope: scopes(),
     redirect_uri: oauthRedirectUri(request, "tiktok"), state,
   });
   return AUTHORIZE + "?" + params.toString();
@@ -16,7 +16,7 @@ export function tiktokAuthorizationUrl(request: Request, state: string) {
 
 export async function tiktokExchangeCode(request: Request, code: string) {
   const body = new URLSearchParams({
-    client_key: requireEnv("TIKTOK_CLIENT_KEY"), client_secret: requireEnv("TIKTOK_CLIENT_SECRET"),
+    client_key: process.env.TIKTOK_CLIENT_KEY || requireEnv("TIKTOK_CLIENT_ID"), client_secret: requireEnv("TIKTOK_CLIENT_SECRET"),
     code, grant_type: "authorization_code", redirect_uri: oauthRedirectUri(request, "tiktok"),
   });
   const response = await fetch(TOKEN, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body, cache: "no-store" });
