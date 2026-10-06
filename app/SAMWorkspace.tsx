@@ -44,6 +44,7 @@ export default function SAMWorkspace() {
   const [youtubeUploadMessage, setYoutubeUploadMessage] = useState("");
   const [socialConnections, setSocialConnections] = useState<Record<string, any>>({});
   const [socialBusy, setSocialBusy] = useState(false);
+  const [deviceNotice, setDeviceNotice] = useState("");
   const [activeView, setActiveView] = useState<View>("chat");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -219,10 +220,10 @@ export default function SAMWorkspace() {
       </div>;
     }
     if (activeView === "device") return <div className="sam-panel"><h2>Device access</h2><p>Browser permission-এর মাধ্যমে SAM microphone, camera এবং screen sharing ব্যবহার করতে পারে। OS-level permission সবসময় তোমাকেই অনুমতি দিতে হবে।</p><div className="sam-access-grid">
-      <button onClick={async () => { try { await navigator.mediaDevices.getUserMedia({ audio: true }); } catch {} }}>🎙 Microphone</button>
-      <button onClick={async () => { try { await navigator.mediaDevices.getUserMedia({ video: true }); } catch {} }}>📷 Camera</button>
-      <button onClick={async () => { try { await (navigator.mediaDevices as any).getDisplayMedia({ video: true }); } catch {} }}>🖥 Screen share</button>
-    </div><div className="sam-empty">Full device control is not granted by a webpage; native Android/PC permissions remain explicit.</div></div>;
+      <button onClick={async () => { try { if (!navigator.mediaDevices?.getUserMedia) throw new Error("এই browser microphone access সমর্থন করে না।"); await navigator.mediaDevices.getUserMedia({ audio: true }); setDeviceNotice("Microphone permission দেওয়া হয়েছে।"); } catch (e) { setDeviceNotice(e instanceof Error ? e.message : "Microphone permission দেওয়া যায়নি। Browser/Android permission settings চেক করো।"); } }}>🎙 Microphone</button>
+      <button onClick={async () => { try { if (!navigator.mediaDevices?.getUserMedia) throw new Error("এই browser camera access সমর্থন করে না।"); await navigator.mediaDevices.getUserMedia({ video: true }); setDeviceNotice("Camera permission দেওয়া হয়েছে।"); } catch (e) { setDeviceNotice(e instanceof Error ? e.message : "Camera permission দেওয়া যায়নি।"); } }}>📷 Camera</button>
+      <button onClick={async () => { try { const fn = (navigator.mediaDevices as any)?.getDisplayMedia; if (!fn) throw new Error("এই Android WebView/browser-এ Screen Share API সমর্থিত নয়। Chrome বা supported desktop browser ব্যবহার করতে হবে।"); await fn.call(navigator.mediaDevices, { video: true }); setDeviceNotice("Screen sharing permission দেওয়া হয়েছে।"); } catch (e) { setDeviceNotice(e instanceof Error ? e.message : "Screen sharing permission দেওয়া যায়নি।"); } }}>🖥 Screen share</button>
+    </div>{deviceNotice && <div className="sam-note" role="status">{deviceNotice}</div>}<div className="sam-empty">Full device control is not granted by a webpage; native Android/PC permissions remain explicit.</div></div>;
     return <div className="sam-panel"><h2>Settings</h2><p>Voice language, connected services এবং workspace preferences.</p><div className="sam-setting-row"><span>Voice language</span><select value={voiceLang} onChange={(e) => setVoiceLang(e.target.value)}>{VOICE_LANGS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}</select></div></div>;
   }
 
