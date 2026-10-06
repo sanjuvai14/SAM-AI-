@@ -20,7 +20,7 @@ export function metaAuthorizationUrl(request: Request, state: string) {
 export async function metaExchangeCode(request: Request, code: string) {
   const params = new URLSearchParams({
     client_id: process.env.META_APP_ID || requireEnv("FACEBOOK_CLIENT_ID"),
-    client_secret: requireEnv("META_APP_SECRET"),
+    client_secret: process.env.META_APP_SECRET || requireEnv("FACEBOOK_CLIENT_SECRET"),
     redirect_uri: oauthRedirectUri(request, "meta"),
     code,
   });
