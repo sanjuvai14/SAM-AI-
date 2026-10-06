@@ -34,10 +34,10 @@ class MainActivity : Activity() {
                 override fun onPermissionRequest(request: PermissionRequest) {
                     runOnUiThread {
                         val allowed = request.resources.filter {
-                            it == PermissionRequest.RESOURCE_AUDIO_CAPTURE ||
-                            it == PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                            (it == PermissionRequest.RESOURCE_AUDIO_CAPTURE && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) ||
+                            (it == PermissionRequest.RESOURCE_VIDEO_CAPTURE && checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
                         }.toTypedArray()
-                        if (allowed.isNotEmpty()) request.grant(allowed)
+                        if (allowed.isNotEmpty()) request.grant(allowed) else request.deny()
                     }
                 }
             }
@@ -62,9 +62,10 @@ class MainActivity : Activity() {
 
         setContentView(root)
 
-        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), voiceCode)
-        }
+        val missing = arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA)
+            .filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
+            .toTypedArray()
+        if (missing.isNotEmpty()) requestPermissions(missing, voiceCode)
 
         webView.loadUrl("https://sam-ai-2026.vercel.app")
     }
