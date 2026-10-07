@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSupabaseAuthContext } from "@/lib/supabase-auth";
+import { getSocialConnection } from "@/lib/social-connections";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -13,8 +14,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  let userId: string;
   try {
-    await requireSupabaseAuthContext(request);
+    ({ userId } = await requireSupabaseAuthContext(request));
   } catch {
     return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   }
@@ -23,6 +25,34 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const messages = Array.isArray(body?.messages) ? body.messages as Msg[] : [];
     const provider = process.env.AI_PROVIDER || "openai";
+
+    // Provide SAM with verified connection metadata only. Never send OAuth
+    // access/refresh tokens or other credentials to the AI provider.
+    let integrationContext =
+      "Verified integrations: YouTube is not connected to this SAM account.";
+    try {
+      const youtube = await getSocialConnection(userId, "youtube");
+      if (youtube) {
+        const channels = Array.isArray(youtube.metadata?.channels)
+          ? youtube.metadata.channels
+              .filter((c: any) => c && typeof c.id === "string")
+              .map((c: any) => ({ id: c.id, title: typeof c.title === "string" ? c.title : null }))
+          : [];
+        const selectedId = youtube.external_account_id || null;
+        const selected = channels.find((c: any) => c.id === selectedId);
+        integrationContext =
+          "Verified integration: YouTube is connected to this SAM account." +
+          ` Selected channel: ${selected?.title || youtube.account_name || "connected YouTube channel"}` +
+          ` (ID: ${selectedId || "available after channel selection"}).` +
+          (channels.length
+            ? ` Available channels in the connected account: ${channels.map((c: any) => c.title || c.id).join(", ")}.`
+            : "") +
+          " SAM may truthfully say it has server-side authorized YouTube access, but it must not expose credentials.";
+      }
+    } catch {
+      integrationContext =
+        "Verified integration status: YouTube connection could not be read from SAM's database. Do not claim YouTube access.";
+    }
     const key = process.env.OPENAI_API_KEY || process.env.AI_PROVIDER_API_KEY;
 
     if (provider !== "openai") {
@@ -57,7 +87,7 @@ export async function POST(request: NextRequest) {
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-        messages: [{ role: "system", content: SYSTEM }, ...bounded],
+        messages: [{ role: "system", content: SYSTEM + "\n\n" + integrationContext }, ...bounded],
         temperature: 0.5,
       }),
     });
