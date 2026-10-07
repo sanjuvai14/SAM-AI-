@@ -38,6 +38,10 @@ export default function SAMWorkspace() {
   const [proposal, setProposal] = useState<CommandProposal | null>(null);
   const [youtubeConnected, setYoutubeConnected] = useState(false);
   const [youtubeName, setYoutubeName] = useState("");
+  const [youtubeChannels, setYoutubeChannels] = useState<Array<{id: string; title: string | null}>>([]);
+  const [youtubeSelectedChannel, setYoutubeSelectedChannel] = useState("");
+  const [youtubeChannelBusy, setYoutubeChannelBusy] = useState(false);
+  const [youtubeChannelNotice, setYoutubeChannelNotice] = useState("");
   const [youtubeFile, setYoutubeFile] = useState<File | null>(null);
   const [youtubeTitle, setYoutubeTitle] = useState("");
   const [youtubeUploadBusy, setYoutubeUploadBusy] = useState(false);
@@ -60,6 +64,14 @@ export default function SAMWorkspace() {
       .then((r) => r.ok ? r.json() : null)
       .then((data) => { if (data) setSocialConnections(data); })
       .catch(() => undefined);
+    void fetch("/api/youtube/channels", { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.connected) {
+          setYoutubeChannels(Array.isArray(data.channels) ? data.channels : []);
+          setYoutubeSelectedChannel(data.selectedChannelId || "");
+        }
+      }).catch(() => undefined);
     void fetch("/api/youtube/status", { cache: "no-store" })
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
@@ -212,6 +224,32 @@ export default function SAMWorkspace() {
               <div className="sam-connection-actions">
                 {connected ? <><span className="sam-connected">Connected</span><button type="button" onClick={() => alert("Disconnect is handled through the provider authorization settings or SAM account security controls.")}>Manage</button></> : <a className="sam-connect" href={item.href}>Connect</a>}
               </div>
+              {connected && item.key === "youtube" && youtubeChannels.length > 0 && <div className="sam-channel-picker">
+                <label htmlFor="sam-youtube-channel"><b>YouTube channel</b></label>
+                <select id="sam-youtube-channel" value={youtubeSelectedChannel} disabled={youtubeChannelBusy} onChange={async (e) => {
+                  const channelId = e.target.value;
+                  setYoutubeSelectedChannel(channelId);
+                  setYoutubeChannelNotice("Channel selection saving…");
+                  setYoutubeChannelBusy(true);
+                  try {
+                    const response = await fetch("/api/youtube/channels/select", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      credentials: "same-origin",
+                      body: JSON.stringify({ channelId }),
+                    });
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok) throw new Error(data.error || "Channel selection failed.");
+                    setYoutubeName(data.accountName || "YouTube connected");
+                    setYoutubeChannelNotice("YouTube channel selected and saved.");
+                  } catch (error) {
+                    setYoutubeChannelNotice(error instanceof Error ? error.message : "Channel selection failed.");
+                  } finally { setYoutubeChannelBusy(false); }
+                }}>
+                  {youtubeChannels.map((channel) => <option key={channel.id} value={channel.id}>{channel.title || channel.id}</option>)}
+                </select>
+                {youtubeChannelNotice && <div className="sam-note" role="status">{youtubeChannelNotice}</div>}
+              </div>}
               {connected && <details className="sam-permissions"><summary>Granted permissions ({scopes.length})</summary><div>{scopes.map((scope: string) => <span key={scope}>{scope}</span>)}</div></details>}
             </div>;
           })}
