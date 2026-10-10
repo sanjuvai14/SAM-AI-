@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "ai.sanjuvai.sam",
+  appId: "com.sam.privateai",
   appName: "SAM",
   webDir: "public",
   server: {
