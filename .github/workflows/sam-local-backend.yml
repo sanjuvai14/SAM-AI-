@@ -1,0 +1,50 @@
+name: SAM Local Backend Checks
+
+on:
+  push:
+    branches: [main, feat/sam-private-assistant-core]
+    paths:
+      - "backend/**"
+      - "desktop/**"
+      - ".github/workflows/sam-local-backend.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "desktop/**"
+      - ".github/workflows/sam-local-backend.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r backend/requirements.txt pytest
+      - name: Compile backend
+        run: python -m compileall -q backend/sam_backend
+      - name: Test backend safety and memory
+        working-directory: backend
+        run: PYTHONPATH=. pytest -q
+
+  desktop-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node --check desktop/main.cjs
+      - run: node --check desktop/preload.cjs
+      - name: Validate desktop package metadata
+        run: node -e "JSON.parse(require('fs').readFileSync('desktop/package.json','utf8'))"
