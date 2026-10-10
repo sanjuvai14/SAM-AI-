@@ -6,3 +6,4 @@ psutil>=6.1,<8
 python-multipart>=0.0.20,<1
 pydantic-settings>=2.7,<3
 # Optional local speech recognition: pip install faster-whisper
+python-dotenv>=1.0,<2
