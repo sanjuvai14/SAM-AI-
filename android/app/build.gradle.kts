@@ -9,7 +9,7 @@ android {
         applicationId = "com.sam.privateai"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "4.23.0"
+        versionCode = 2
+        versionName = "4.30.0"
     }
 }
