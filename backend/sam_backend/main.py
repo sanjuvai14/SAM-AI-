@@ -8,11 +8,15 @@ from pathlib import Path
 from typing import Literal
 
 import psutil
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.background import BackgroundTask
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+
+# Load backend-local environment variables; existing shell variables take precedence.
+load_dotenv(Path(__file__).resolve().parents[1] / ".env", override=False)
 
 from .memory import add_memory, search_memory
 from .providers import chat
