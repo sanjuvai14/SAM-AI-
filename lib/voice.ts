@@ -37,3 +37,9 @@ export function verifyVoiceTranscript(transcript: string, confidence: number | n
   if (confidence !== null && confidence < 0.55) return { accepted: false, reason: "low_confidence" };
   return { accepted: true, reason: "clear" };
 }
+
+/** Recognize an explicit spoken stop/shutdown command without matching phrases like "don't stop". */
+export function isVoiceStopCommand(transcript: string): boolean {
+  const value = transcript.trim().toLocaleLowerCase().replace(/[.!?。！？,，]+$/g, "").trim();
+  return /^(?:(?:sam|স্যাম|सैम)[\s,]*)?(?:exit|quit|goodbye|stop|shut down|shutdown|থামো|থামুন|বন্ধ কর|বন্ধ করো|বন্ধ করুন|বন্ধ হও|বিদায়|বিদায়|रुको|रुकिए|बंद करो|बंद करें|अलविदा)$/.test(value);
+}
