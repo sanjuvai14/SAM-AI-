@@ -1,46 +1,46 @@
 # SAM — Private Personal Assistant
 
-SAM is Sanju's private assistant project and must remain separate from CreateSoul AI / CreatorFlow.
+SAM is a private assistant project and remains separate from CreateSoul AI / CreatorFlow.
 
-## Included in the current codebase
+## Existing production application
 
-- Private workspace UI with browser-local conversation history.
-- Supabase email/password authentication with HTTP-only session cookies.
-- Server-side OpenAI chat endpoint.
-- Browser speech input where supported (Bangla, English, Hindi UI options).
-- Command classification and proposal-only behavior; external actions are not silently executed.
-- YouTube OAuth start/callback foundation, channel verification, encrypted credential persistence, connection status, and authenticated video-upload endpoint.
-- Supabase-backed job/audit/social-connection schema and security policies (review current migrations before applying to another project).
-- Vercel production deployment and GitHub build workflow.
+The current hosted app remains the Next.js + React application on Vercel, with Supabase authentication, server-side OpenAI chat, browser speech input, a command-proposal safety model, and social integration foundations. The existing app is not replaced by the local companion added on this feature branch.
 
-## Security expectations
+## New local-first companion (feature branch)
 
-- Do not commit API keys, OAuth secrets, access tokens, refresh tokens, or signing keys.
-- AI and command POST endpoints require an authenticated SAM session.
-- Social posting must remain explicit-approval gated and report success only after provider-side verification.
-- Treat all external actions as unverified until the platform confirms them.
-- SAM is for private personal use; social integrations may be connected incrementally later.
+This branch adds a separate Python FastAPI backend and an Electron desktop shell for local computer access. See backend/README.md for setup and security boundaries.
 
-## Runtime configuration
+Implemented in source:
+- Authenticated localhost API and a minimal WebSocket health channel.
+- Provider routing for local Ollama, OpenAI, and Anthropic.
+- Encrypted append-only local memory using Fernet; the encryption key is supplied separately by the owner.
+- CPU, RAM, disk, and uptime telemetry.
+- Workspace-confined file listing, reading, and create-only writing with size limits.
+- Read-only command allowlist with explicit confirmation; arbitrary shell execution is intentionally not implemented.
+- Opt-in web search through a configured search provider.
+- Optional faster-whisper transcription and Piper text-to-speech integrations.
+- Electron desktop UI with context isolation, sandboxing, no Node integration in the renderer, and an allowlisted IPC API.
+- Automated Python safety/memory tests and desktop JavaScript syntax checks.
 
-See `.env.example`. Required production variables depend on which feature is enabled. OpenAI uses `OPENAI_API_KEY` and optional `OPENAI_MODEL`. SAM authentication requires `SAM_SUPABASE_URL` and `SAM_SUPABASE_ANON_KEY`. YouTube additionally requires Google OAuth client credentials, `SAM_OAUTH_STATE_SECRET`, `SAM_TOKEN_ENCRYPTION_KEY`, the SAM Supabase service token, and the production callback URL.
+## Important limitations
 
-Never paste secrets into chat or commit them to GitHub.
+- These additions are on branch feat/sam-private-assistant-core; they have not been merged to main or deployed to the production Vercel app.
+- The local backend must run on the user's own PC. Vercel's serverless environment is not a replacement for a persistent local desktop process.
+- Local Ollama, Whisper, and Piper models/binaries must be installed and configured separately.
+- The backend and Electron app have not yet been proven through a full installed runtime test or real PC/device end-to-end test.
+- No signed desktop installer or signed Android release is claimed by this branch.
+- Voice interruption/full-duplex audio, broad autonomous file operations, arbitrary terminal execution, ChromaDB/Qdrant vector retrieval, and production-grade encrypted credential vaulting are not claimed as complete.
+- YouTube and other social OAuth/publishing still require real provider account consent and external verification. Meta/Instagram/TikTok are intentionally deferred.
+- Never report external actions as complete unless the target provider verifies success.
 
-## Build verification
+## Security
 
-```bash
-npm install
-npm run typecheck
-npm run build
-```
+- Do not commit API keys, OAuth secrets, access tokens, refresh tokens, signing keys, .env files, or local data.
+- Keep the local API bound to 127.0.0.1. Do not expose port 8000 to the public internet.
+- Configure a strong SAM_LOCAL_API_TOKEN (at least 32 characters) and a SAM_MEMORY_FERNET_KEY.
+- Losing the Fernet key means encrypted memory cannot be recovered; store it securely and separately.
+- Review and test this feature branch before merging or using it with sensitive data.
 
-The GitHub Actions workflow runs typecheck and production build on pushes and pull requests to main.
+## Existing app verification
 
-## Remaining owner-only checks
-
-- Confirm production environment variables are correct and current.
-- Authorize the actual Google/YouTube account and test channel lookup/upload.
-- Add Meta/Instagram/TikTok integrations later when desired.
-- Install/test a signed Android release on a real device if the Android client is still wanted.
-- Confirm Supabase Auth password-protection setting and perform a real account login/AI test.
+Before considering the production app release-ready, verify the current production environment variables, a real Supabase login, live AI chat, any desired YouTube account authorization/upload, and a signed Android release on a real device. Do not infer these tests passed from a successful Vercel build alone.

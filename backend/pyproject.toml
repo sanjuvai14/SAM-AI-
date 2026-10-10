@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sam-local-backend"
+version = "0.1.0"
+description = "Local-first companion API for SAM Private AI Assistant"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.34,<1",
+  "httpx>=0.28,<1",
+  "cryptography>=44,<47",
+  "psutil>=6.1,<8",
+  "python-multipart>=0.0.20,<1",
+  "pydantic-settings>=2.7,<3",
+  "python-dotenv>=1.0,<2",
+]
+
+[project.optional-dependencies]
+voice = ["faster-whisper>=1.1,<2"]
+test = ["pytest>=8.3,<9", "httpx>=0.28,<1"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sam_backend*"]

@@ -1,0 +1,9 @@
+{
+  "name": "sam-private-assistant-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Desktop shell for the SAM local-first assistant",
+  "main": "main.cjs",
+  "scripts": { "start": "electron ." },
+  "devDependencies": { "electron": "^36.0.0" }
+}
