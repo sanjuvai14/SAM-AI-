@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { classifyVoiceIntent, verifyVoiceTranscript } from "@/lib/voice";
+import { classifyVoiceIntent, isVoiceStopCommand, verifyVoiceTranscript } from "@/lib/voice";
 
 type Message = { role: "user" | "assistant"; content: string };
 type View = "chat" | "projects" | "tasks" | "library" | "plugins" | "device" | "settings";
@@ -106,6 +106,11 @@ export default function SAMWorkspace() {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text.replace(/[*_#\`]/g, ""));
     u.lang = voiceLang;
+    u.rate = 0.95;
+    const voices = window.speechSynthesis.getVoices();
+    const exactVoice = voices.find((voice) => voice.lang.toLowerCase() === voiceLang.toLowerCase());
+    const languageVoice = voices.find((voice) => voice.lang.toLowerCase().startsWith(voiceLang.split("-")[0].toLowerCase()));
+    if (exactVoice || languageVoice) u.voice = exactVoice || languageVoice || null;
     window.speechSynthesis.speak(u);
   }
 
@@ -169,6 +174,14 @@ export default function SAMWorkspace() {
         const confidence = e.results[e.resultIndex]?.[0]?.confidence;
         const verification = verifyVoiceTranscript(transcript, typeof confidence === "number" ? confidence : null);
         if (!verification.accepted) { setVoiceNotice("কথাটি পরিষ্কারভাবে বোঝা যায়নি—আবার বলো।"); return; }
+        if (isVoiceStopCommand(transcript)) {
+          continuousRef.current = false;
+          setContinuous(false);
+          setListening(false);
+          setVoiceNotice("Voice assistant stopped. আবার চালু করতে microphone বোতাম চাপো।");
+          speak(voiceLang === "bn-BD" ? "ঠিক আছে, আমি থামছি। আবার দরকার হলে মাইক্রোফোন চাপো।" : voiceLang === "hi-IN" ? "ठीक है, मैं रुक रहा हूँ। फिर शुरू करने के लिए माइक्रोफ़ोन दबाएँ।" : "Okay, I’m stopping. Press the microphone when you want to start again.");
+          return;
+        }
         const intent = classifyVoiceIntent(transcript, typeof confidence === "number" ? confidence : null);
         if (intent.type === "automation_request") {
           setVoiceNotice("এটি consequential action। আগে proposed action দেখানো হবে।");
