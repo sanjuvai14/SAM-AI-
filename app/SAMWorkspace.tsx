@@ -209,11 +209,26 @@ export default function SAMWorkspace() {
     if (activeView === "library") return <div className="sam-panel"><h2>Library</h2><p>Saved conversations, files এবং generated assets-এর জায়গা।</p><div className="sam-empty">Your saved library will appear here.</div></div>;
     if (activeView === "plugins") {
       const social = [
-        { key: "youtube", name: "YouTube", icon: "▶", href: "/api/oauth/youtube", desc: "Google account দিয়ে YouTube channel connect" },
-        { key: "meta", name: "Facebook / Instagram", icon: "f", href: "/api/oauth/meta", desc: "Meta account ও অনুমোদিত Pages/Instagram access" },
-        { key: "tiktok", name: "TikTok", icon: "♪", href: "/api/oauth/tiktok", desc: "TikTok account ও approved API scopes" },
+        { key: "youtube", name: "YouTube", icon: "▶", href: "/api/oauth/youtube", desc: "Google OAuth · channels and uploads", supported: true },
+        { key: "meta", name: "Facebook Pages", icon: "f", href: "/api/oauth/meta", desc: "Meta OAuth and Page permissions", supported: false },
+        { key: "instagram", name: "Instagram", icon: "◎", href: "", desc: "Meta OAuth and professional account permissions", supported: false },
+        { key: "threads", name: "Threads", icon: "@", href: "", desc: "Threads API and Meta authorization", supported: false },
+        { key: "tiktok", name: "TikTok", icon: "♪", href: "/api/oauth/tiktok", desc: "TikTok OAuth and posting API review", supported: false },
+        { key: "x", name: "X", icon: "𝕏", href: "", desc: "X OAuth and API access", supported: false },
+        { key: "linkedin", name: "LinkedIn", icon: "in", href: "", desc: "LinkedIn OAuth and publishing permissions", supported: false },
+        { key: "pinterest", name: "Pinterest", icon: "P", href: "", desc: "Pinterest API access", supported: false },
+        { key: "reddit", name: "Reddit", icon: "r/", href: "", desc: "Reddit OAuth and API access", supported: false },
+        { key: "bluesky", name: "Bluesky", icon: "b", href: "", desc: "Bluesky account authorization", supported: false },
+        { key: "mastodon", name: "Mastodon", icon: "m", href: "", desc: "Instance-specific authorization", supported: false },
+        { key: "telegram", name: "Telegram", icon: "➤", href: "", desc: "Bot/account setup and permissions", supported: false },
+        { key: "discord", name: "Discord", icon: "◉", href: "", desc: "Discord OAuth or bot authorization", supported: false },
+        { key: "twitch", name: "Twitch", icon: "▣", href: "", desc: "Twitch OAuth permissions", supported: false },
+        { key: "snapchat", name: "Snapchat", icon: "S", href: "", desc: "Snap developer access and approval", supported: false },
+        { key: "whatsapp", name: "WhatsApp Business", icon: "◔", href: "", desc: "Meta business account and API approval", supported: false },
+        { key: "google-business", name: "Google Business Profile", icon: "G", href: "", desc: "Google OAuth and profile access", supported: false },
+        { key: "medium", name: "Medium", icon: "M", href: "", desc: "Publication API capability check", supported: false },
       ];
-      return <div className="sam-panel"><h2>Apps & social connections</h2><p>এখানে Enable/Disable নয়—প্রতিটি service-এ ঢুকে তার নিজস্ব login/consent screen থেকে account connect করবে। এরপর SAM শুধু অনুমোদিত permission-ই ব্যবহার করবে।</p>
+      return <div className="sam-panel"><h2>Apps, plugins & social accounts</h2><p>এখানে Enable/Disable নয়—প্রতিটি service-এ ঢুকে তার নিজস্ব login/consent screen থেকে account connect করবে। এরপর SAM শুধু অনুমোদিত permission-ই ব্যবহার করবে।</p>
         <div className="sam-connection-list">
           {social.map((item) => {
             const connection = socialConnections[item.key];
@@ -222,8 +237,9 @@ export default function SAMWorkspace() {
             return <div className="sam-connection-card" key={item.key}>
               <div className="sam-connection-main"><div className="sam-service-icon">{item.icon}</div><div><b>{item.name}</b><small>{connected ? (connection.account.name || "Connected account") : item.desc}</small></div></div>
               <div className="sam-connection-actions">
-                {connected ? <><span className="sam-connected">Connected</span><button type="button" onClick={() => alert("Disconnect is handled through the provider authorization settings or SAM account security controls.")}>Manage</button></> : <a className="sam-connect" href={item.href}>Connect</a>}
+                {connected ? <><span className="sam-connected">Connected</span><button type="button" onClick={() => alert("Revoke access from the provider security settings; a universal SAM disconnect flow is not yet available.")}>Manage</button></> : item.key === "youtube" ? <a className="sam-connect" href={item.href}>Connect</a> : <span className="sam-connected">Setup required</span>}
               </div>
+              {!item.supported && <small className="sam-plugin-status">Connector not yet implemented/configured — catalog entry only</small>}
               {connected && item.key === "youtube" && youtubeChannels.length > 0 && <div className="sam-channel-picker">
                 <label htmlFor="sam-youtube-channel"><b>YouTube channel</b></label>
                 <select id="sam-youtube-channel" value={youtubeSelectedChannel} disabled={youtubeChannelBusy} onChange={async (e) => {
