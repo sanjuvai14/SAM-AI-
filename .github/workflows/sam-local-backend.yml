@@ -48,3 +48,7 @@ jobs:
       - run: node --check desktop/preload.cjs
       - name: Validate desktop package metadata
         run: node -e "JSON.parse(require('fs').readFileSync('desktop/package.json','utf8'))"
+      - name: Check inline renderer JavaScript syntax
+        run: |
+          python -c "from pathlib import Path; import re; h=Path('desktop/index.html').read_text(); s=re.findall(r'<script>(.*?)</script>', h, re.S); assert s, 'No inline script found'; Path('/tmp/sam-renderer.js').write_text('\\n'.join(s))"
+          node --check /tmp/sam-renderer.js
