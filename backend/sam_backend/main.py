@@ -9,6 +9,8 @@ from typing import Literal
 
 import psutil
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.background import BackgroundTask
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -175,8 +177,12 @@ def speak_local(body: dict):
         result = subprocess.run([binary, "--model", model, "--output_file", output_path], input=text, capture_output=True, text=True, timeout=20, shell=False)
         if result.returncode != 0 or not Path(output_path).is_file():
             raise RuntimeError("Piper failed")
-        # Return path only; never read arbitrary filesystem paths from the request.
-        return {"audio_path": output_path, "provider": "piper-local", "note": "Audio is stored in a temporary file on this device."}
+        return FileResponse(
+            output_path,
+            media_type="audio/wav",
+            filename="sam-response.wav",
+            background=BackgroundTask(lambda: Path(output_path).unlink(missing_ok=True)),
+        )
     except Exception as exc:
         raise HTTPException(status_code=502, detail="Local Piper TTS failed.") from exc
 
